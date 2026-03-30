@@ -1,0 +1,1848 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Digital Twins — Byron James | MBA 670</title>
+<link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=Lato:wght@300;400;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+<style>
+/* ═══════════════════════════════════════════
+   ROOT & RESET
+═══════════════════════════════════════════ */
+:root {
+  --bg: #EFF4FB;
+  --card: #FFFFFF;
+  --navy: #002B55;
+  --blueprint: #003A6E;
+  --sky: #1A8CFF;
+  --sky-light: #D6EAFF;
+  --amber: #F59E0B;
+  --amber-light: #FEF3C7;
+  --grid: rgba(0,58,110,.09);
+  --text: #0A2744;
+  --sub: #3D5A7A;
+  --border: #C0D4EA;
+  --soft: #EFF4FB;
+  --green: #10B981;
+  --slide-h: 100vh;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+html,body{height:100%;overflow:hidden;}
+body{
+  font-family:'Lato',sans-serif;
+  background:var(--bg);
+  color:var(--text);
+  background-image:
+    linear-gradient(var(--grid) 1px,transparent 1px),
+    linear-gradient(90deg,var(--grid) 1px,transparent 1px);
+  background-size:40px 40px;
+}
+
+/* ═══════════════════════════════════════════
+   SLIDE ENGINE
+═══════════════════════════════════════════ */
+.deck{width:100%;height:100vh;position:relative;overflow:hidden;}
+.slide{
+  position:absolute;inset:0;
+  display:flex;flex-direction:column;
+  opacity:0;pointer-events:none;
+  transition:opacity .5s ease, transform .5s ease;
+  transform:translateX(60px);
+  overflow-y:auto;
+}
+.slide.active{opacity:1;pointer-events:all;transform:translateX(0);}
+.slide.prev{opacity:0;transform:translateX(-60px);}
+
+/* ═══════════════════════════════════════════
+   NAV BAR
+═══════════════════════════════════════════ */
+.nav-bar{
+  position:fixed;bottom:0;left:0;right:0;z-index:100;
+  background:var(--navy);
+  display:flex;align-items:center;justify-content:space-between;
+  padding:10px 32px;
+  border-top:2px solid var(--amber);
+}
+.nav-bar .slide-counter{
+  font-family:'Share Tech Mono',monospace;font-size:12px;
+  color:rgba(255,255,255,.5);letter-spacing:2px;
+}
+.nav-dots{display:flex;gap:8px;align-items:center;}
+.nav-dot{
+  width:8px;height:8px;border-radius:50%;
+  background:rgba(255,255,255,.25);
+  cursor:pointer;transition:all .2s;border:none;
+}
+.nav-dot.active{background:var(--amber);transform:scale(1.3);}
+.nav-dot:hover{background:var(--sky);}
+.nav-btns{display:flex;gap:8px;}
+.nav-btn{
+  background:transparent;border:1px solid rgba(255,255,255,.2);
+  color:#fff;padding:6px 20px;cursor:pointer;
+  font-family:'Rajdhani',sans-serif;font-size:14px;font-weight:600;letter-spacing:1px;
+  transition:all .2s;
+}
+.nav-btn:hover{background:var(--sky);border-color:var(--sky);}
+.nav-btn.primary{background:var(--amber);border-color:var(--amber);color:var(--navy);}
+.nav-btn.primary:hover{background:#D97706;}
+
+/* ═══════════════════════════════════════════
+   SHARED SLIDE PARTS
+═══════════════════════════════════════════ */
+.slide-top-bar{
+  background:var(--blueprint);
+  padding:10px 40px;
+  display:flex;justify-content:space-between;align-items:center;
+  flex-shrink:0;
+}
+.stb-left{font-family:'Share Tech Mono',monospace;font-size:11px;color:rgba(255,255,255,.5);letter-spacing:2px;}
+.stb-right{font-family:'Share Tech Mono',monospace;font-size:11px;color:var(--amber);letter-spacing:2px;}
+.slide-inner{
+  flex:1;padding:28px 48px 80px;
+  display:flex;flex-direction:column;
+}
+.slide-header{
+  display:flex;align-items:center;gap:14px;
+  margin-bottom:24px;padding-bottom:14px;
+  border-bottom:2px solid var(--border);
+}
+.sh-num{
+  font-family:'Share Tech Mono',monospace;font-size:10px;
+  background:var(--sky);color:#fff;
+  padding:3px 8px;letter-spacing:1px;
+}
+.sh-title{
+  font-family:'Rajdhani',sans-serif;font-size:26px;font-weight:700;
+  color:var(--blueprint);letter-spacing:1px;
+}
+.sh-tag{
+  margin-left:auto;font-family:'Share Tech Mono',monospace;
+  font-size:9px;color:var(--sub);letter-spacing:2px;
+}
+
+/* PRESENTER BULLETS */
+.presenter-box{
+  background:var(--amber-light);
+  border:1px solid var(--amber);
+  border-left:4px solid var(--amber);
+  padding:10px 16px;
+  margin-top:auto;
+  flex-shrink:0;
+}
+.presenter-box .pb-label{
+  font-family:'Share Tech Mono',monospace;font-size:9px;
+  color:var(--amber);letter-spacing:2px;margin-bottom:6px;
+}
+.presenter-box ul{
+  display:flex;flex-wrap:wrap;gap:4px 24px;
+  list-style:none;padding:0;
+}
+.presenter-box ul li{
+  font-size:12px;color:#78350F;
+  padding-left:12px;position:relative;
+}
+.presenter-box ul li::before{content:'▸';position:absolute;left:0;color:var(--amber);}
+
+/* ═══════════════════════════════════════════
+   SLIDE 1 — TITLE
+═══════════════════════════════════════════ */
+#s1{background:var(--card);}
+.s1-body{
+  flex:1;display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:0;
+  overflow:hidden;
+}
+.s1-left{
+  padding:44px 40px 32px 48px;
+  display:flex;flex-direction:column;
+  justify-content:center;
+  border-right:1px solid var(--border);
+}
+.s1-eyebrow{
+  display:flex;align-items:center;gap:8px;
+  margin-bottom:20px;
+  font-family:'Share Tech Mono',monospace;font-size:11px;
+  color:var(--sky);letter-spacing:2px;
+}
+.s1-eyebrow::before{content:'▶';font-size:8px;}
+.s1-left h1{
+  font-family:'Rajdhani',sans-serif;font-size:72px;font-weight:700;
+  line-height:.92;color:var(--blueprint);letter-spacing:-1px;
+  margin-bottom:16px;
+}
+.s1-left h1 em{font-style:normal;color:var(--sky);}
+.s1-left .tagline{
+  font-size:14px;color:var(--sub);font-weight:300;
+  line-height:1.6;max-width:360px;margin-bottom:28px;
+}
+.s1-specs{display:flex;flex-direction:column;gap:0;border:1px solid var(--border);}
+.s1-spec{
+  display:flex;align-items:center;gap:0;
+  border-bottom:1px solid var(--border);
+}
+.s1-spec:last-child{border-bottom:none;}
+.s1-spec .sk{
+  font-family:'Share Tech Mono',monospace;font-size:9px;
+  color:var(--sky);letter-spacing:2px;
+  background:#F0F5FB;padding:8px 14px;
+  width:100px;flex-shrink:0;
+  border-right:1px solid var(--border);
+}
+.s1-spec .sv{font-size:13px;font-weight:600;color:var(--text);padding:8px 14px;}
+.agenda-row{
+  display:flex;gap:6px;flex-wrap:wrap;margin-top:20px;
+}
+.ag-chip{
+  font-family:'Share Tech Mono',monospace;font-size:9px;
+  padding:3px 10px;letter-spacing:1px;
+  border:1px solid var(--border);color:var(--sub);
+  background:var(--soft);
+}
+
+/* DRONE ANIMATION PANEL */
+.s1-right{
+  background:linear-gradient(180deg,#F0F5FB 0%,#EAF1FA 100%);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  padding:20px;position:relative;overflow:hidden;
+}
+.s1-right::before{
+  content:'';position:absolute;inset:0;
+  background-image:
+    linear-gradient(rgba(0,58,110,.07) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(0,58,110,.07) 1px,transparent 1px);
+  background-size:30px 30px;
+}
+.drone-scene{
+  position:relative;z-index:1;
+  display:flex;align-items:center;gap:0;
+  width:100%;max-width:480px;
+}
+.drone-panel{
+  flex:1;display:flex;flex-direction:column;align-items:center;gap:10px;
+}
+.drone-label{
+  font-family:'Share Tech Mono',monospace;font-size:10px;
+  letter-spacing:2px;padding:3px 10px;
+}
+.drone-label.phys{color:var(--blueprint);border:1px solid var(--blueprint);}
+.drone-label.digi{color:var(--sky);border:1px solid var(--sky);}
+.drone-svg-wrap{
+  width:160px;height:100px;
+  display:flex;align-items:center;justify-content:center;
+}
+
+/* Physical drone — solid colors */
+.phys-drone{animation:droneHover 3s ease-in-out infinite;}
+@keyframes droneHover{0%,100%{transform:translateY(0);}50%{transform:translateY(-6px);}}
+
+/* Digital drone — wireframe/glowing */
+.digi-drone{
+  animation:droneHover 3s ease-in-out infinite;
+  animation-delay:.4s;
+  filter:drop-shadow(0 0 6px rgba(26,140,255,.5));
+}
+
+/* Data stream between drones */
+.data-stream{
+  width:80px;display:flex;flex-direction:column;
+  align-items:center;gap:6px;position:relative;
+}
+.stream-label{
+  font-family:'Share Tech Mono',monospace;font-size:8px;
+  color:var(--green);letter-spacing:1px;
+  background:#fff;padding:2px 6px;
+  border:1px solid var(--green);
+  position:relative;z-index:1;
+}
+.stream-track{
+  width:100%;height:2px;background:var(--border);
+  position:relative;overflow:visible;
+  display:flex;align-items:center;
+}
+.stream-pulse{
+  position:absolute;width:14px;height:14px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  font-size:8px;color:#fff;font-weight:700;
+}
+.sp1{
+  background:var(--sky);
+  animation:streamFlow 2s linear infinite;
+  animation-delay:0s;
+}
+.sp2{
+  background:var(--green);
+  animation:streamFlow 2s linear infinite;
+  animation-delay:.7s;
+}
+.sp3{
+  background:var(--amber);
+  animation:streamFlow 2s linear infinite;
+  animation-delay:1.4s;
+}
+@keyframes streamFlow{
+  0%{left:-14px;opacity:0;}
+  10%{opacity:1;}
+  90%{opacity:1;}
+  100%{left:calc(100% + 14px);opacity:0;}
+}
+.stream-back{
+  background:rgba(26,140,255,.12);height:1px;
+  margin-top:4px;
+}
+.stream-back .sp1{
+  background:rgba(26,140,255,.4);
+  animation-direction:reverse;
+}
+.scan-line{
+  position:absolute;top:0;left:0;right:0;
+  height:2px;background:rgba(26,140,255,.3);
+  animation:scan 2.5s linear infinite;
+}
+@keyframes scan{0%{top:0;opacity:.6;}100%{top:100%;opacity:0;}}
+.s1-drone-label{
+  margin-top:12px;position:relative;z-index:1;
+  font-family:'Share Tech Mono',monospace;font-size:9px;
+  color:var(--sub);letter-spacing:2px;text-align:center;
+  background:rgba(255,255,255,.8);padding:4px 12px;border:1px solid var(--border);
+}
+
+/* ═══════════════════════════════════════════
+   SLIDE 2 — WHAT IS A DIGITAL TWIN
+═══════════════════════════════════════════ */
+#s2{background:var(--card);}
+.def-grid{display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:20px;}
+.def-card{
+  background:var(--soft);border:1px solid var(--border);
+  border-top:3px solid var(--sky);
+  padding:18px 20px;
+}
+.def-card h3{
+  font-family:'Rajdhani',sans-serif;font-size:16px;font-weight:700;
+  color:var(--blueprint);margin-bottom:8px;
+  display:flex;align-items:center;gap:8px;
+}
+.def-card p{font-size:13px;color:var(--sub);line-height:1.6;}
+.def-card .icon{font-size:22px;}
+.vs-row{
+  display:grid;grid-template-columns:1fr auto 1fr;gap:0;
+  border:1px solid var(--border);margin-bottom:20px;overflow:hidden;
+}
+.vs-col{padding:16px 20px;}
+.vs-col h3{font-family:'Rajdhani',sans-serif;font-size:15px;font-weight:700;color:var(--blueprint);margin-bottom:10px;}
+.vs-col ul{list-style:none;display:flex;flex-direction:column;gap:6px;}
+.vs-col ul li{font-size:12px;color:var(--sub);padding-left:14px;position:relative;}
+.vs-col ul li::before{content:'—';position:absolute;left:0;color:var(--border);}
+.vs-divider{
+  display:flex;align-items:center;justify-content:center;
+  background:var(--blueprint);color:var(--amber);
+  font-family:'Rajdhani',sans-serif;font-size:18px;font-weight:700;
+  width:48px;letter-spacing:1px;
+  border-left:1px solid var(--border);border-right:1px solid var(--border);
+}
+
+/* Timeline */
+.timeline{display:flex;gap:0;margin-bottom:20px;}
+.tl-item{
+  flex:1;padding:14px 16px;
+  border:1px solid var(--border);border-right:none;
+  background:#fff;position:relative;
+}
+.tl-item:last-child{border-right:1px solid var(--border);}
+.tl-item::after{
+  content:'▶';position:absolute;right:-12px;top:50%;transform:translateY(-50%);
+  color:var(--sky);font-size:14px;z-index:1;
+}
+.tl-item:last-child::after{display:none;}
+.tl-year{
+  font-family:'Share Tech Mono',monospace;font-size:18px;color:var(--amber);
+  font-weight:700;margin-bottom:4px;
+}
+.tl-title{font-family:'Rajdhani',sans-serif;font-size:14px;font-weight:700;color:var(--blueprint);margin-bottom:4px;}
+.tl-desc{font-size:11px;color:var(--sub);line-height:1.5;}
+
+/* ═══════════════════════════════════════════
+   SLIDE 3 — HOW IT WORKS / TYPES
+═══════════════════════════════════════════ */
+#s3{background:var(--card);}
+.types-intro{
+  font-size:13px;color:var(--sub);margin-bottom:18px;
+  padding:10px 16px;background:var(--soft);border-left:4px solid var(--sky);
+}
+.types-grid{
+  display:grid;grid-template-columns:repeat(3,1fr);gap:12px;
+  margin-bottom:16px;
+}
+.type-card{
+  background:#fff;border:1px solid var(--border);
+  padding:14px 14px 12px;
+  transition:border-color .2s,box-shadow .2s;
+  cursor:default;position:relative;overflow:hidden;
+}
+.type-card::before{
+  content:'';position:absolute;top:0;left:0;right:0;height:3px;
+  background:var(--sky);
+}
+.type-card:hover{border-color:var(--sky);box-shadow:0 4px 16px rgba(26,140,255,.12);}
+.type-card.gold::before{background:var(--amber);}
+.type-card.green::before{background:var(--green);}
+.tc-top{display:flex;align-items:center;gap:10px;margin-bottom:8px;}
+.tc-icon{
+  width:40px;height:40px;flex-shrink:0;
+  display:flex;align-items:center;justify-content:center;
+}
+.tc-meta{flex:1;}
+.tc-num{
+  font-family:'Share Tech Mono',monospace;font-size:9px;
+  color:var(--sky);letter-spacing:2px;margin-bottom:2px;
+}
+.tc-name{font-family:'Rajdhani',sans-serif;font-size:15px;font-weight:700;color:var(--blueprint);}
+.tc-desc{font-size:11px;color:var(--sub);line-height:1.5;}
+
+/* ═══════════════════════════════════════════
+   SLIDE 4 — DIGITAL TWINS + OTHER TECH
+═══════════════════════════════════════════ */
+#s4{background:var(--card);}
+.tech-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:14px;margin-bottom:16px;}
+.tech-card{
+  background:var(--soft);border:1px solid var(--border);
+  padding:16px 12px;text-align:center;
+  border-top:3px solid var(--sky);
+}
+.tech-card .tch-icon{font-size:32px;margin-bottom:10px;}
+.tech-card h3{
+  font-family:'Rajdhani',sans-serif;font-size:14px;font-weight:700;
+  color:var(--blueprint);margin-bottom:8px;
+}
+.tech-card p{font-size:11px;color:var(--sub);line-height:1.5;}
+.synergy-bar{
+  background:var(--blueprint);color:#fff;
+  padding:14px 20px;display:flex;align-items:center;gap:16px;
+  margin-bottom:16px;
+}
+.synergy-bar .sb-title{
+  font-family:'Rajdhani',sans-serif;font-size:16px;font-weight:700;
+  letter-spacing:1px;color:var(--amber);white-space:nowrap;
+}
+.synergy-bar p{font-size:12px;color:rgba(255,255,255,.7);line-height:1.5;}
+
+/* ═══════════════════════════════════════════
+   SLIDE 5 — CURRENT COMMERCIAL
+═══════════════════════════════════════════ */
+#s5{background:var(--card);}
+.comm-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px;}
+.comm-card{
+  background:var(--soft);border:1px solid var(--border);padding:18px 20px;
+  display:flex;gap:14px;
+}
+.comm-card .cc-icon{
+  width:48px;height:48px;flex-shrink:0;
+  background:var(--blueprint);color:#fff;
+  display:flex;align-items:center;justify-content:center;
+  font-size:22px;
+}
+.comm-card h3{font-family:'Rajdhani',sans-serif;font-size:16px;font-weight:700;color:var(--blueprint);margin-bottom:6px;}
+.comm-card ul{list-style:none;padding:0;}
+.comm-card ul li{font-size:12px;color:var(--sub);padding-left:14px;position:relative;margin-bottom:3px;}
+.comm-card ul li::before{content:'▸';position:absolute;left:0;color:var(--amber);}
+.market-bar{
+  display:flex;gap:16px;background:var(--navy);padding:14px 20px;align-items:center;margin-bottom:16px;
+}
+.mb-stat{text-align:center;flex:1;border-right:1px solid rgba(255,255,255,.1);}
+.mb-stat:last-child{border-right:none;}
+.mb-num{font-family:'Rajdhani',sans-serif;font-size:28px;font-weight:700;color:var(--amber);}
+.mb-label{font-family:'Share Tech Mono',monospace;font-size:9px;color:rgba(255,255,255,.5);letter-spacing:2px;}
+
+/* ═══════════════════════════════════════════
+   SLIDE 6 — FUTURE COMMERCIAL
+═══════════════════════════════════════════ */
+#s6{background:var(--card);}
+.future-timeline{display:flex;flex-direction:column;gap:12px;margin-bottom:16px;}
+.ft-item{
+  display:flex;gap:16px;align-items:stretch;
+  border:1px solid var(--border);background:#fff;overflow:hidden;
+}
+.ft-year{
+  background:var(--blueprint);color:var(--amber);
+  font-family:'Rajdhani',sans-serif;font-size:20px;font-weight:700;
+  padding:14px 18px;display:flex;align-items:center;justify-content:center;
+  min-width:80px;letter-spacing:1px;flex-shrink:0;
+}
+.ft-content{padding:12px 16px;}
+.ft-content h3{font-family:'Rajdhani',sans-serif;font-size:16px;font-weight:700;color:var(--blueprint);margin-bottom:4px;}
+.ft-content p{font-size:12px;color:var(--sub);line-height:1.5;}
+.ft-tags{display:flex;gap:6px;margin-top:8px;flex-wrap:wrap;}
+.ft-tag{
+  font-family:'Share Tech Mono',monospace;font-size:9px;
+  padding:2px 8px;background:var(--sky-light);color:var(--sky);
+  letter-spacing:1px;
+}
+
+/* ═══════════════════════════════════════════
+   SLIDE 7 — THEOLOGICAL
+═══════════════════════════════════════════ */
+#s7{background:var(--card);}
+.theo-intro{
+  background:var(--navy);color:#fff;padding:16px 20px;margin-bottom:20px;
+  border-left:4px solid var(--amber);
+}
+.theo-intro p{font-size:13px;line-height:1.7;font-weight:300;font-style:italic;}
+.theo-intro .source{font-family:'Share Tech Mono',monospace;font-size:10px;color:var(--amber);margin-top:8px;}
+.theo-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:16px;}
+.theo-card{
+  background:var(--soft);border:1px solid var(--border);
+  padding:16px 18px;border-left:4px solid var(--amber);
+}
+.theo-card h3{
+  font-family:'Rajdhani',sans-serif;font-size:15px;font-weight:700;
+  color:var(--blueprint);margin-bottom:8px;
+  display:flex;align-items:center;gap:8px;
+}
+.theo-card p{font-size:12px;color:var(--sub);line-height:1.6;}
+.theo-card .verse{
+  font-family:'Share Tech Mono',monospace;font-size:9px;
+  color:var(--amber);margin-top:8px;letter-spacing:1px;
+}
+.theo-summary{
+  background:var(--blueprint);color:#fff;padding:14px 20px;
+  display:flex;align-items:center;gap:16px;
+}
+.theo-summary .ts-icon{font-size:28px;flex-shrink:0;}
+.theo-summary p{font-size:13px;line-height:1.6;font-weight:300;}
+.theo-summary strong{color:var(--amber);}
+
+/* ═══════════════════════════════════════════
+   SLIDE 8 — PHANTOM-X DRONE SIMULATOR
+═══════════════════════════════════════════ */
+#s8{background:#001A38;}
+#s8 .slide-top-bar{background:#000D1A;border-bottom:1px solid rgba(26,140,255,.2);}
+.sim-wrapper{
+  flex:1;display:grid;grid-template-columns:280px 1fr;
+  gap:0;overflow:hidden;padding-bottom:60px;
+}
+.sim-controls{
+  background:#001020;border-right:1px solid rgba(26,140,255,.2);
+  padding:16px;display:flex;flex-direction:column;gap:12px;overflow-y:auto;
+}
+.ctrl-header{
+  font-family:'Share Tech Mono',monospace;font-size:10px;
+  color:rgba(255,255,255,.4);letter-spacing:2px;padding-bottom:8px;
+  border-bottom:1px solid rgba(255,255,255,.1);
+}
+.ctrl-group{display:flex;flex-direction:column;gap:4px;}
+.ctrl-label{
+  font-family:'Share Tech Mono',monospace;font-size:9px;
+  color:var(--sky);letter-spacing:2px;
+}
+.ctrl-name{font-size:12px;color:#fff;font-weight:600;margin-bottom:2px;}
+.ctrl-slider{
+  -webkit-appearance:none;width:100%;height:4px;
+  background:rgba(255,255,255,.1);border-radius:2px;cursor:pointer;
+}
+.ctrl-slider::-webkit-slider-thumb{
+  -webkit-appearance:none;width:14px;height:14px;border-radius:50%;
+  background:var(--sky);cursor:pointer;
+}
+.ctrl-value{
+  font-family:'Share Tech Mono',monospace;font-size:11px;
+  color:var(--amber);text-align:right;
+}
+.ctrl-divider{height:1px;background:rgba(255,255,255,.08);}
+
+/* Sim display */
+.sim-display{display:flex;flex-direction:column;overflow:hidden;}
+.sim-drone-view{
+  flex:1;position:relative;display:flex;align-items:center;justify-content:center;
+  background:linear-gradient(180deg,#001A38 0%,#00102A 100%);
+  overflow:hidden;min-height:220px;
+}
+.sim-grid-bg{
+  position:absolute;inset:0;
+  background-image:
+    linear-gradient(rgba(26,140,255,.08) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(26,140,255,.08) 1px,transparent 1px);
+  background-size:24px 24px;
+}
+.sim-drone-container{
+  position:relative;z-index:2;
+  display:flex;flex-direction:column;align-items:center;gap:8px;
+}
+.sim-drone-svg{transition:transform .4s ease;}
+.sim-callout{
+  display:flex;gap:8px;flex-wrap:wrap;justify-content:center;
+}
+.callout{
+  font-family:'Share Tech Mono',monospace;font-size:9px;
+  padding:3px 8px;background:rgba(0,0,0,.4);
+  border:1px solid;letter-spacing:1px;
+}
+.callout.sky{color:var(--sky);border-color:rgba(26,140,255,.4);}
+.callout.amber{color:var(--amber);border-color:rgba(245,158,11,.4);}
+.callout.green{color:var(--green);border-color:rgba(16,185,129,.4);}
+.callout.red{color:#F87171;border-color:rgba(248,113,113,.4);}
+.altitude-line{
+  position:absolute;left:20px;top:50%;transform:translateY(-50%);
+  display:flex;flex-direction:column;align-items:center;gap:2px;
+}
+.alt-bar{
+  width:3px;background:rgba(26,140,255,.3);border-radius:2px;
+  transition:height .4s ease;
+}
+.alt-marker{
+  font-family:'Share Tech Mono',monospace;font-size:9px;color:var(--sky);
+  writing-mode:vertical-rl;transform:rotate(180deg);letter-spacing:1px;
+  margin-top:4px;
+}
+
+/* Telemetry */
+.sim-telemetry{
+  background:#000D1A;border-top:1px solid rgba(26,140,255,.2);
+  padding:12px 16px;display:grid;grid-template-columns:repeat(5,1fr);gap:8px;
+}
+.telem-cell{
+  border:1px solid rgba(26,140,255,.15);padding:8px 10px;background:rgba(0,26,56,.5);
+}
+.telem-label{
+  font-family:'Share Tech Mono',monospace;font-size:8px;
+  color:rgba(255,255,255,.35);letter-spacing:2px;margin-bottom:3px;
+}
+.telem-value{
+  font-family:'Share Tech Mono',monospace;font-size:16px;
+  font-weight:700;
+}
+.telem-unit{font-size:9px;margin-left:2px;opacity:.6;}
+
+/* Risk bar */
+.risk-bar-wrap{
+  padding:8px 16px;background:#000D1A;
+  border-top:1px solid rgba(255,255,255,.05);
+}
+.rb-label{
+  font-family:'Share Tech Mono',monospace;font-size:8px;
+  color:rgba(255,255,255,.3);letter-spacing:2px;margin-bottom:4px;
+  display:flex;justify-content:space-between;
+}
+.rb-track{height:6px;background:rgba(255,255,255,.06);border-radius:3px;overflow:hidden;}
+.rb-fill{
+  height:100%;border-radius:3px;
+  transition:width .4s ease, background .4s ease;
+}
+.sim-advisory{
+  padding:6px 16px;
+  font-family:'Share Tech Mono',monospace;font-size:10px;letter-spacing:1px;
+  border-top:1px solid rgba(255,255,255,.05);
+  transition:all .3s;
+}
+</style>
+</head>
+<body>
+
+<div class="deck">
+
+<!-- ══════════════════════════════════════
+     SLIDE 1 — TITLE + DRONE ANIMATION
+══════════════════════════════════════ -->
+<div class="slide active" id="s1">
+  <div class="slide-top-bar">
+    <span class="stb-left">WJU-MBA-670 // TECH INNOVATION SERIES</span>
+    <span class="stb-right">▣ FINAL PRESENTATION — 30% GRADE WEIGHT</span>
+  </div>
+  <div class="s1-body">
+    <div class="s1-left">
+      <div class="s1-eyebrow">MODULE 03 — EMERGING TECHNOLOGY ANALYSIS</div>
+      <h1>DIGITAL<br><em>TWINS</em></h1>
+      <p class="tagline">Virtual models that mirror physical reality in real time — bridging the gap between the world we build and the data that governs it.</p>
+      <div class="s1-specs">
+        <div class="s1-spec"><span class="sk">PRESENTER</span><span class="sv">Byron James</span></div>
+        <div class="s1-spec"><span class="sk">COURSE</span><span class="sv">MBA 670</span></div>
+        <div class="s1-spec"><span class="sk">UNIVERSITY</span><span class="sv">William Jessup University</span></div>
+        <div class="s1-spec"><span class="sk">DEMO</span><span class="sv">Phantom-X Combat Drone Twin</span></div>
+      </div>
+      <div class="agenda-row">
+        <span class="ag-chip">01 · DEFINITION</span>
+        <span class="ag-chip">02 · HOW IT WORKS</span>
+        <span class="ag-chip">03 · COMMERCIAL NOW</span>
+        <span class="ag-chip">04 · COMMERCIAL FUTURE</span>
+        <span class="ag-chip">05 · THEOLOGY</span>
+      </div>
+    </div>
+
+    <!-- INTERACTIVE DRONE PANEL -->
+    <div class="s1-right">
+      <div class="s1-drone-label">// DIGITAL TWIN CONCEPT — LIVE VISUALIZATION</div>
+      <div class="drone-scene">
+        <!-- Physical Drone -->
+        <div class="drone-panel">
+          <span class="drone-label phys">PHYSICAL</span>
+          <div class="drone-svg-wrap">
+            <svg class="phys-drone" width="150" height="90" viewBox="0 0 150 90" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <!-- Body -->
+              <rect x="55" y="32" width="40" height="22" rx="4" fill="#003A6E"/>
+              <!-- Cockpit -->
+              <ellipse cx="75" cy="35" rx="14" ry="7" fill="#1A5C9E"/>
+              <!-- Wings -->
+              <polygon points="55,38 10,28 12,42 55,46" fill="#002B55"/>
+              <polygon points="95,38 140,28 138,42 95,46" fill="#002B55"/>
+              <!-- Tail -->
+              <rect x="68" y="50" width="14" height="18" rx="2" fill="#002B55"/>
+              <polygon points="68,50 55,65 75,62" fill="#003A6E"/>
+              <polygon points="82,50 95,65 75,62" fill="#003A6E"/>
+              <!-- Engine pods -->
+              <ellipse cx="35" cy="38" rx="8" ry="4" fill="#F59E0B"/>
+              <ellipse cx="115" cy="38" rx="8" ry="4" fill="#F59E0B"/>
+              <!-- Weapons -->
+              <rect x="20" y="42" width="20" height="4" rx="1" fill="#4A5568"/>
+              <rect x="110" y="42" width="20" height="4" rx="1" fill="#4A5568"/>
+              <!-- Cockpit detail -->
+              <ellipse cx="75" cy="34" rx="8" ry="4" fill="#2D7DD2" opacity=".6"/>
+            </svg>
+          </div>
+        </div>
+
+        <!-- Data Stream -->
+        <div class="data-stream">
+          <span class="stream-label">LIVE DATA</span>
+          <div class="stream-track" style="margin:4px 0;">
+            <div class="stream-pulse sp1">⬡</div>
+            <div class="stream-pulse sp2">⬡</div>
+            <div class="stream-pulse sp3">⬡</div>
+          </div>
+          <span class="stream-label" style="background:rgba(16,185,129,.1);color:var(--green);border-color:var(--green);">SYNC</span>
+          <div class="stream-track" style="margin:4px 0;">
+            <div class="stream-pulse sp1" style="animation-direction:reverse;animation-delay:.3s;">⬡</div>
+            <div class="stream-pulse sp2" style="animation-direction:reverse;animation-delay:1s;">⬡</div>
+          </div>
+        </div>
+
+        <!-- Digital Twin Drone -->
+        <div class="drone-panel">
+          <span class="drone-label digi">DIGITAL TWIN</span>
+          <div class="drone-svg-wrap" style="position:relative;">
+            <div class="scan-line"></div>
+            <svg class="digi-drone" width="150" height="90" viewBox="0 0 150 90" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <!-- Body wireframe -->
+              <rect x="55" y="32" width="40" height="22" rx="4" fill="none" stroke="#1A8CFF" stroke-width="1.5"/>
+              <!-- Cockpit wireframe -->
+              <ellipse cx="75" cy="35" rx="14" ry="7" fill="rgba(26,140,255,.06)" stroke="#1A8CFF" stroke-width="1"/>
+              <!-- Wings wireframe -->
+              <polygon points="55,38 10,28 12,42 55,46" fill="rgba(26,140,255,.04)" stroke="#1A8CFF" stroke-width="1"/>
+              <polygon points="95,38 140,28 138,42 95,46" fill="rgba(26,140,255,.04)" stroke="#1A8CFF" stroke-width="1"/>
+              <!-- Tail wireframe -->
+              <rect x="68" y="50" width="14" height="18" rx="2" fill="none" stroke="#1A8CFF" stroke-width="1"/>
+              <polygon points="68,50 55,65 75,62" fill="rgba(26,140,255,.04)" stroke="#1A8CFF" stroke-width="1"/>
+              <polygon points="82,50 95,65 75,62" fill="rgba(26,140,255,.04)" stroke="#1A8CFF" stroke-width="1"/>
+              <!-- Engine pods wireframe -->
+              <ellipse cx="35" cy="38" rx="8" ry="4" fill="rgba(245,158,11,.1)" stroke="#F59E0B" stroke-width="1.5"/>
+              <ellipse cx="115" cy="38" rx="8" ry="4" fill="rgba(245,158,11,.1)" stroke="#F59E0B" stroke-width="1.5"/>
+              <!-- Data points -->
+              <circle cx="75" cy="43" r="3" fill="#1A8CFF" opacity=".8">
+                <animate attributeName="opacity" values="0.8;0.2;0.8" dur="1.5s" repeatCount="indefinite"/>
+              </circle>
+              <circle cx="35" cy="38" r="2" fill="#10B981" opacity=".9">
+                <animate attributeName="opacity" values="0.9;0.3;0.9" dur="1.2s" repeatCount="indefinite"/>
+              </circle>
+              <circle cx="115" cy="38" r="2" fill="#10B981" opacity=".9">
+                <animate attributeName="opacity" values="0.9;0.3;0.9" dur="1.2s" repeatCount="indefinite" begin="0.6s"/>
+              </circle>
+              <!-- Grid overlay lines -->
+              <line x1="55" y1="43" x2="95" y2="43" stroke="#1A8CFF" stroke-width=".5" stroke-dasharray="3,3" opacity=".4"/>
+              <line x1="75" y1="32" x2="75" y2="68" stroke="#1A8CFF" stroke-width=".5" stroke-dasharray="3,3" opacity=".4"/>
+            </svg>
+          </div>
+        </div>
+      </div>
+      <div class="s1-drone-label" style="margin-top:8px;">PHANTOM-X COMBAT DRONE — FULL DEMO ON SLIDE 8</div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════
+     SLIDE 2 — WHAT IS A DIGITAL TWIN
+══════════════════════════════════════ -->
+<div class="slide" id="s2">
+  <div class="slide-top-bar">
+    <span class="stb-left">WJU-MBA-670 // DIGITAL TWINS</span>
+    <span class="stb-right">SECTION 01 // DEFINITION & HISTORY</span>
+  </div>
+  <div class="slide-inner">
+    <div class="slide-header">
+      <span class="sh-num">01</span>
+      <span class="sh-title">WHAT IS A DIGITAL TWIN?</span>
+      <span class="sh-tag">DEFINITION & HISTORY</span>
+    </div>
+
+    <!-- Simulation vs Digital Twin -->
+    <div class="vs-row">
+      <div class="vs-col">
+        <h3>⏸ SIMULATION</h3>
+        <ul>
+          <li>Static snapshot in time</li>
+          <li>Predefined scenarios only</li>
+          <li>Shows how things <em>should</em> work</li>
+          <li>Run once — then it's done</li>
+        </ul>
+      </div>
+      <div class="vs-divider">VS</div>
+      <div class="vs-col" style="background:#F0F7FF;">
+        <h3 style="color:var(--sky);">▶ DIGITAL TWIN</h3>
+        <ul>
+          <li>Continuously updated via live sensors</li>
+          <li>Mirrors real-world conditions right now</li>
+          <li>Shows how things <em>are</em> working</li>
+          <li>Learns over time via machine learning</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- Definition -->
+    <div class="def-grid">
+      <div class="def-card">
+        <h3><span class="icon">📡</span>THE DEFINITION</h3>
+        <p>"A virtual representation of a real-world object, system, or process — where sensors continuously feed live data into the digital model, ensuring it reflects real-world conditions in real time." <em style="color:var(--sub);font-size:11px;">— NSF, 2026</em></p>
+      </div>
+      <div class="def-card">
+        <h3><span class="icon">🔄</span>THE KEY DIFFERENCE</h3>
+        <p>A digital twin isn't just a 3D model — it's a <strong>living system</strong> that breathes with its physical counterpart. Every sensor reading, every temperature shift, every performance metric flows into the twin in real time.</p>
+      </div>
+    </div>
+
+    <!-- History Timeline -->
+    <div class="timeline">
+      <div class="tl-item">
+        <div class="tl-year">1960</div>
+        <div class="tl-title">NASA Mirroring</div>
+        <div class="tl-desc">NASA replicates space systems on Earth — including Apollo 13 crisis response</div>
+      </div>
+      <div class="tl-item">
+        <div class="tl-year">2002</div>
+        <div class="tl-title">Dr. Michael Grieves</div>
+        <div class="tl-desc">University of Michigan — "Conceptual Ideal for PLM" introduces the full framework</div>
+      </div>
+      <div class="tl-item">
+        <div class="tl-year">2010</div>
+        <div class="tl-title">John Vickers / NASA</div>
+        <div class="tl-desc">Formally names and defines "Digital Twin" — adopted across aerospace & engineering</div>
+      </div>
+      <div class="tl-item">
+        <div class="tl-year">NOW</div>
+        <div class="tl-title">Global Adoption</div>
+        <div class="tl-desc">$73B+ market — manufacturing, defense, cities, healthcare, and beyond</div>
+      </div>
+    </div>
+
+    <div class="presenter-box">
+      <div class="pb-label">▸ PRESENTER NOTES</div>
+      <ul>
+        <li>Start with the Apollo 13 analogy — audience will connect instantly</li>
+        <li>Emphasize: simulation = photo, digital twin = live video feed</li>
+        <li>Grieves coined the concept; Vickers gave it the name we use today</li>
+        <li>Point out: this technology has been evolving for over 60 years</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════
+     SLIDE 3 — SENSOR TYPES
+══════════════════════════════════════ -->
+<div class="slide" id="s3sensor">
+  <div class="slide-top-bar">
+    <span class="stb-left">WJU-MBA-670 // DIGITAL TWINS</span>
+    <span class="stb-right">SECTION 02A // HOW IT WORKS — THE NERVOUS SYSTEM</span>
+  </div>
+  <div class="slide-inner">
+    <div class="slide-header">
+      <span class="sh-num">02A</span>
+      <span class="sh-title">THE SENSOR LAYER — HOW TWINS FEEL THE WORLD</span>
+      <span class="sh-tag">SOURCE: DATAKNOW · IBM · NASA</span>
+    </div>
+
+    <div style="background:var(--blueprint);color:#fff;padding:12px 20px;margin-bottom:18px;display:flex;align-items:center;gap:14px;">
+      <svg width="28" height="28" viewBox="0 0 28 28" fill="none"><circle cx="14" cy="14" r="10" stroke="#F59E0B" stroke-width="1.5"/><circle cx="14" cy="14" r="5" stroke="#1A8CFF" stroke-width="1.5"/><circle cx="14" cy="14" r="2" fill="#F59E0B"/><line x1="14" y1="2" x2="14" y2="6" stroke="#F59E0B" stroke-width="1.5"/><line x1="14" y1="22" x2="14" y2="26" stroke="#F59E0B" stroke-width="1.5"/><line x1="2" y1="14" x2="6" y2="14" stroke="#F59E0B" stroke-width="1.5"/><line x1="22" y1="14" x2="26" y2="14" stroke="#F59E0B" stroke-width="1.5"/></svg>
+      <p style="font-size:13px;font-weight:300;line-height:1.6;">Sensors are the nervous system of a Digital Twin — without them, the virtual model is just a 3D picture. Sensors capture the physical world's real-time state and transmit it continuously so the twin stays alive and accurate.</p>
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px;">
+
+      <!-- CATEGORY 1: Environmental -->
+      <div style="background:#fff;border:1px solid var(--border);overflow:hidden;">
+        <div style="background:var(--sky);padding:8px 16px;display:flex;align-items:center;gap:10px;">
+          <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M10 2 Q14 8 14 12 a4 4 0 0 1-8 0Q6 8 10 2Z" fill="none" stroke="#fff" stroke-width="1.5"/><line x1="10" y1="12" x2="10" y2="16" stroke="#fff" stroke-width="1.5"/></svg>
+          <span style="font-family:'Rajdhani',sans-serif;font-size:15px;font-weight:700;color:#fff;letter-spacing:1px;">ENVIRONMENTAL SENSORS</span>
+        </div>
+        <div style="padding:12px 16px;display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+          <div style="display:flex;gap:8px;align-items:flex-start;">
+            <svg width="22" height="22" viewBox="0 0 22 22" flex-shrink="0" style="flex-shrink:0;margin-top:2px"><rect x="8" y="2" width="6" height="12" rx="3" fill="none" stroke="#1A8CFF" stroke-width="1.2"/><circle cx="11" cy="16" r="4" fill="none" stroke="#1A8CFF" stroke-width="1.2"/><circle cx="11" cy="16" r="2" fill="#1A8CFF"/></svg>
+            <div><div style="font-family:'Share Tech Mono',monospace;font-size:9px;color:var(--sky);letter-spacing:1px;">TEMPERATURE</div><div style="font-size:11px;color:var(--sub);">Thermocouples, infrared sensors — engine heat, component stress</div></div>
+          </div>
+          <div style="display:flex;gap:8px;align-items:flex-start;">
+            <svg width="22" height="22" viewBox="0 0 22 22" style="flex-shrink:0;margin-top:2px"><circle cx="11" cy="11" r="7" fill="none" stroke="#1A8CFF" stroke-width="1.2"/><path d="M6 13 Q11 7 16 13" fill="none" stroke="#1A8CFF" stroke-width="1.2"/></svg>
+            <div><div style="font-family:'Share Tech Mono',monospace;font-size:9px;color:var(--sky);letter-spacing:1px;">PRESSURE</div><div style="font-size:11px;color:var(--sub);">Transducers, gauges — hydraulics, fuel lines, cabin pressure</div></div>
+          </div>
+          <div style="display:flex;gap:8px;align-items:flex-start;">
+            <svg width="22" height="22" viewBox="0 0 22 22" style="flex-shrink:0;margin-top:2px"><path d="M4 16 Q7 8 11 14 Q15 20 18 10" fill="none" stroke="#1A8CFF" stroke-width="1.2"/></svg>
+            <div><div style="font-family:'Share Tech Mono',monospace;font-size:9px;color:var(--sky);letter-spacing:1px;">HUMIDITY</div><div style="font-size:11px;color:var(--sub);">Capacitive sensors — corrosion risk, avionics protection</div></div>
+          </div>
+          <div style="display:flex;gap:8px;align-items:flex-start;">
+            <svg width="22" height="22" viewBox="0 0 22 22" style="flex-shrink:0;margin-top:2px"><circle cx="11" cy="9" r="4" fill="none" stroke="#F59E0B" stroke-width="1.2"/><line x1="11" y1="1" x2="11" y2="5" stroke="#F59E0B" stroke-width="1.2"/><line x1="4" y1="4" x2="7" y2="7" stroke="#F59E0B" stroke-width="1.2"/><line x1="18" y1="4" x2="15" y2="7" stroke="#F59E0B" stroke-width="1.2"/><line x1="2" y1="9" x2="6" y2="9" stroke="#F59E0B" stroke-width="1.2"/><line x1="16" y1="9" x2="20" y2="9" stroke="#F59E0B" stroke-width="1.2"/></svg>
+            <div><div style="font-family:'Share Tech Mono',monospace;font-size:9px;color:var(--amber);letter-spacing:1px;">LIGHT / EM</div><div style="font-size:11px;color:var(--sub);">Photodiodes, ambient sensors — targeting optics, cockpit display</div></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- CATEGORY 2: Motion & Position -->
+      <div style="background:#fff;border:1px solid var(--border);overflow:hidden;">
+        <div style="background:#0069CC;padding:8px 16px;display:flex;align-items:center;gap:10px;">
+          <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><circle cx="10" cy="10" r="3" fill="#fff"/><path d="M10 2 L12 8 L10 7 L8 8 Z" fill="#fff"/><path d="M18 10 L12 12 L13 10 L12 8 Z" fill="#fff"/><path d="M10 18 L8 12 L10 13 L12 12 Z" fill="#fff"/><path d="M2 10 L8 8 L7 10 L8 12 Z" fill="#fff"/></svg>
+          <span style="font-family:'Rajdhani',sans-serif;font-size:15px;font-weight:700;color:#fff;letter-spacing:1px;">MOTION & POSITION SENSORS</span>
+        </div>
+        <div style="padding:12px 16px;display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+          <div style="display:flex;gap:8px;align-items:flex-start;">
+            <svg width="22" height="22" viewBox="0 0 22 22" style="flex-shrink:0;margin-top:2px"><line x1="2" y1="11" x2="20" y2="11" stroke="#0069CC" stroke-width="1.2"/><line x1="11" y1="2" x2="11" y2="20" stroke="#0069CC" stroke-width="1.2"/><circle cx="15" cy="7" r="3" fill="none" stroke="#0069CC" stroke-width="1.2"/></svg>
+            <div><div style="font-family:'Share Tech Mono',monospace;font-size:9px;color:#0069CC;letter-spacing:1px;">POSITION</div><div style="font-size:11px;color:var(--sub);">Linear encoders, rotary sensors — control surface angles, landing gear</div></div>
+          </div>
+          <div style="display:flex;gap:8px;align-items:flex-start;">
+            <svg width="22" height="22" viewBox="0 0 22 22" style="flex-shrink:0;margin-top:2px"><rect x="7" y="5" width="8" height="12" rx="2" fill="none" stroke="#0069CC" stroke-width="1.2"/><line x1="5" y1="9" x2="7" y2="9" stroke="#0069CC" stroke-width="1.5"/><line x1="15" y1="9" x2="17" y2="9" stroke="#0069CC" stroke-width="1.5"/><line x1="5" y1="13" x2="7" y2="13" stroke="#0069CC" stroke-width="1.5"/><line x1="15" y1="13" x2="17" y2="13" stroke="#0069CC" stroke-width="1.5"/></svg>
+            <div><div style="font-family:'Share Tech Mono',monospace;font-size:9px;color:#0069CC;letter-spacing:1px;">ACCELEROMETERS</div><div style="font-size:11px;color:var(--sub);">IMUs, gyroscopes — G-force, roll/pitch/yaw, vibration detection</div></div>
+          </div>
+          <div style="display:flex;gap:8px;align-items:flex-start;">
+            <svg width="22" height="22" viewBox="0 0 22 22" style="flex-shrink:0;margin-top:2px"><circle cx="11" cy="11" r="8" fill="none" stroke="#0069CC" stroke-width="1.2"/><circle cx="11" cy="11" r="4" fill="none" stroke="#0069CC" stroke-width="1"/><circle cx="11" cy="11" r="1.5" fill="#0069CC"/></svg>
+            <div><div style="font-family:'Share Tech Mono',monospace;font-size:9px;color:#0069CC;letter-spacing:1px;">GEOSPATIAL / GPS</div><div style="font-size:11px;color:var(--sub);">GPS, compass, altitude sensors — precise navigation and terrain mapping</div></div>
+          </div>
+          <div style="display:flex;gap:8px;align-items:flex-start;">
+            <svg width="22" height="22" viewBox="0 0 22 22" style="flex-shrink:0;margin-top:2px"><path d="M4 18 L11 4 L18 18" fill="none" stroke="#F59E0B" stroke-width="1.2"/><line x1="7" y1="13" x2="15" y2="13" stroke="#F59E0B" stroke-width="1.2"/></svg>
+            <div><div style="font-family:'Share Tech Mono',monospace;font-size:9px;color:var(--amber);letter-spacing:1px;">METEOROLOGICAL</div><div style="font-size:11px;color:var(--sub);">Anemometers, wind sensors — live weather modeling, flight path decisions</div></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- CATEGORY 3: Detection & Imaging -->
+      <div style="background:#fff;border:1px solid var(--border);overflow:hidden;">
+        <div style="background:#065F46;padding:8px 16px;display:flex;align-items:center;gap:10px;">
+          <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><rect x="2" y="5" width="11" height="10" rx="2" stroke="#fff" stroke-width="1.2"/><polygon points="13,8 18,6 18,14 13,12" fill="#fff"/></svg>
+          <span style="font-family:'Rajdhani',sans-serif;font-size:15px;font-weight:700;color:#fff;letter-spacing:1px;">DETECTION & IMAGING SENSORS</span>
+        </div>
+        <div style="padding:12px 16px;display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+          <div style="display:flex;gap:8px;align-items:flex-start;">
+            <svg width="22" height="22" viewBox="0 0 22 22" style="flex-shrink:0;margin-top:2px"><rect x="4" y="6" width="14" height="10" rx="2" fill="none" stroke="#10B981" stroke-width="1.2"/><circle cx="11" cy="11" r="3" fill="none" stroke="#10B981" stroke-width="1.2"/><circle cx="11" cy="11" r="1" fill="#10B981"/></svg>
+            <div><div style="font-family:'Share Tech Mono',monospace;font-size:9px;color:#10B981;letter-spacing:1px;">IMAGE / CAMERA</div><div style="font-size:11px;color:var(--sub);">CCD, CMOS, thermal imaging — target ID, damage assessment, ISR feeds</div></div>
+          </div>
+          <div style="display:flex;gap:8px;align-items:flex-start;">
+            <svg width="22" height="22" viewBox="0 0 22 22" style="flex-shrink:0;margin-top:2px"><path d="M11 4 Q14 4 14 11 Q14 18 11 18 Q8 18 8 11 Q8 4 11 4" fill="none" stroke="#10B981" stroke-width="1.2"/><path d="M7 6 Q4 6 4 11 Q4 16 7 16" fill="none" stroke="#10B981" stroke-width="1" stroke-dasharray="2,1"/><path d="M15 6 Q18 6 18 11 Q18 16 15 16" fill="none" stroke="#10B981" stroke-width="1" stroke-dasharray="2,1"/></svg>
+            <div><div style="font-family:'Share Tech Mono',monospace;font-size:9px;color:#10B981;letter-spacing:1px;">LIDAR / 3D RADAR</div><div style="font-size:11px;color:var(--sub);">Ultrasonic, LiDAR, 3D cameras — real-time obstacle mapping, terrain modeling</div></div>
+          </div>
+          <div style="display:flex;gap:8px;align-items:flex-start;">
+            <svg width="22" height="22" viewBox="0 0 22 22" style="flex-shrink:0;margin-top:2px"><path d="M5 11 Q8 6 11 11 Q14 16 17 11" fill="none" stroke="#10B981" stroke-width="1.2"/><line x1="11" y1="5" x2="11" y2="8" stroke="#10B981" stroke-width="1.2"/><line x1="11" y1="14" x2="11" y2="17" stroke="#10B981" stroke-width="1.2"/></svg>
+            <div><div style="font-family:'Share Tech Mono',monospace;font-size:9px;color:#10B981;letter-spacing:1px;">ACOUSTIC / SOUND</div><div style="font-size:11px;color:var(--sub);">Microphones, piezoelectric — engine signature, structural crack detection</div></div>
+          </div>
+          <div style="display:flex;gap:8px;align-items:flex-start;">
+            <svg width="22" height="22" viewBox="0 0 22 22" style="flex-shrink:0;margin-top:2px"><rect x="6" y="7" width="10" height="8" rx="1" fill="none" stroke="#F59E0B" stroke-width="1.2"/><line x1="8" y1="7" x2="8" y2="5" stroke="#F59E0B" stroke-width="1.2"/><line x1="14" y1="7" x2="14" y2="5" stroke="#F59E0B" stroke-width="1.2"/><line x1="11" y1="15" x2="11" y2="18" stroke="#F59E0B" stroke-width="1.2"/><line x1="9" y1="18" x2="13" y2="18" stroke="#F59E0B" stroke-width="1.2"/></svg>
+            <div><div style="font-family:'Share Tech Mono',monospace;font-size:9px;color:var(--amber);letter-spacing:1px;">FORCE / STRAIN</div><div style="font-size:11px;color:var(--sub);">Load cells, strain gauges — structural integrity, weapons rack stress</div></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- CATEGORY 4: Specialized -->
+      <div style="background:#fff;border:1px solid var(--border);overflow:hidden;">
+        <div style="background:#7C3AED;padding:8px 16px;display:flex;align-items:center;gap:10px;">
+          <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M10 3 L13 8 L18 9 L14 13 L15 18 L10 15 L5 18 L6 13 L2 9 L7 8 Z" stroke="#fff" stroke-width="1.2" fill="none"/></svg>
+          <span style="font-family:'Rajdhani',sans-serif;font-size:15px;font-weight:700;color:#fff;letter-spacing:1px;">SPECIALIZED SENSORS</span>
+        </div>
+        <div style="padding:12px 16px;display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+          <div style="display:flex;gap:8px;align-items:flex-start;">
+            <svg width="22" height="22" viewBox="0 0 22 22" style="flex-shrink:0;margin-top:2px"><circle cx="11" cy="11" r="5" fill="none" stroke="#7C3AED" stroke-width="1.2"/><line x1="11" y1="3" x2="11" y2="6" stroke="#7C3AED" stroke-width="1.2"/><line x1="11" y1="16" x2="11" y2="19" stroke="#7C3AED" stroke-width="1.2"/><line x1="3" y1="11" x2="6" y2="11" stroke="#7C3AED" stroke-width="1.2"/><line x1="16" y1="11" x2="19" y2="11" stroke="#7C3AED" stroke-width="1.2"/></svg>
+            <div><div style="font-family:'Share Tech Mono',monospace;font-size:9px;color:#7C3AED;letter-spacing:1px;">CHEMICAL / GAS</div><div style="font-size:11px;color:var(--sub);">Gas sensors, smoke detectors — fuel leak detection, hazardous exposure alerts</div></div>
+          </div>
+          <div style="display:flex;gap:8px;align-items:flex-start;">
+            <svg width="22" height="22" viewBox="0 0 22 22" style="flex-shrink:0;margin-top:2px"><path d="M11 4 C7 4 5 7 5 10 C5 14 8 17 11 18 C14 17 17 14 17 10 C17 7 15 4 11 4Z" fill="none" stroke="#7C3AED" stroke-width="1.2"/><line x1="11" y1="8" x2="11" y2="12" stroke="#7C3AED" stroke-width="1.5"/><circle cx="11" cy="14" r="1" fill="#7C3AED"/></svg>
+            <div><div style="font-family:'Share Tech Mono',monospace;font-size:9px;color:#7C3AED;letter-spacing:1px;">BIOMETRIC</div><div style="font-size:11px;color:var(--sub);">Vital signs, brain activity — future pilot performance modeling, human twins</div></div>
+          </div>
+          <div style="display:flex;gap:8px;align-items:flex-start;">
+            <svg width="22" height="22" viewBox="0 0 22 22" style="flex-shrink:0;margin-top:2px"><rect x="4" y="8" width="14" height="8" rx="1" fill="none" stroke="#7C3AED" stroke-width="1.2"/><line x1="8" y1="8" x2="8" y2="5" stroke="#7C3AED" stroke-width="1.2"/><line x1="14" y1="8" x2="14" y2="5" stroke="#7C3AED" stroke-width="1.2"/><line x1="8" y1="5" x2="14" y2="5" stroke="#7C3AED" stroke-width="1.2"/></svg>
+            <div><div style="font-family:'Share Tech Mono',monospace;font-size:9px;color:#7C3AED;letter-spacing:1px;">VIRTUAL SENSORS</div><div style="font-size:11px;color:var(--sub);">Software-computed values derived from physical sensor data — fill gaps where physical sensors can't go</div></div>
+          </div>
+          <div style="display:flex;gap:8px;align-items:flex-start;">
+            <svg width="22" height="22" viewBox="0 0 22 22" style="flex-shrink:0;margin-top:2px"><path d="M4 11 Q7 4 11 11 Q15 18 18 11" fill="none" stroke="#F59E0B" stroke-width="1.2"/><circle cx="4" cy="11" r="1.5" fill="#F59E0B"/><circle cx="11" cy="11" r="1.5" fill="#F59E0B"/><circle cx="18" cy="11" r="1.5" fill="#F59E0B"/></svg>
+            <div><div style="font-family:'Share Tech Mono',monospace;font-size:9px;color:var(--amber);letter-spacing:1px;">ELECTROMAGNETIC</div><div style="font-size:11px;color:var(--sub);">RF, radar cross-section detectors — stealth signature monitoring, jamming detection</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div style="background:var(--navy);padding:10px 20px;display:flex;align-items:center;gap:12px;margin-bottom:4px;">
+      <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M10 2 L12 8 L10 7 L8 8 Z" fill="#F59E0B"/><rect x="8" y="7" width="4" height="9" fill="#F59E0B"/><line x1="5" y1="17" x2="15" y2="17" stroke="#F59E0B" stroke-width="1.5"/></svg>
+      <p style="font-size:12px;color:rgba(255,255,255,.8);font-weight:300;"><strong style="color:var(--amber);">PHANTOM-X APPLICATION:</strong> The Phantom-X drone twin integrates temperature (engine), pressure (hydraulics), IMU (flight dynamics), GPS (navigation), LiDAR (obstacle avoidance), thermal camera (targeting), and electromagnetic sensors (stealth monitoring) — all feeding one unified digital twin in real time.</p>
+    </div>
+
+    <div class="presenter-box">
+      <div class="pb-label">▸ PRESENTER NOTES</div>
+      <ul>
+        <li>Key analogy: sensors are to Digital Twins what nerves are to the human body — without them, the twin is blind and static</li>
+        <li>Sensor selection depends entirely on what you need to model — no one-size-fits-all answer</li>
+        <li>Virtual sensors are underrated — software can infer data points where physical sensors can't be placed</li>
+        <li>Calibration is critical — a miscalibrated sensor produces a corrupted twin that makes wrong decisions</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════
+     SLIDE 3 — HOW IT WORKS / 9 TYPES
+══════════════════════════════════════ -->
+<div class="slide" id="s3">
+  <div class="slide-top-bar">
+    <span class="stb-left">WJU-MBA-670 // DIGITAL TWINS</span>
+    <span class="stb-right">SECTION 02 // HOW IT WORKS</span>
+  </div>
+  <div class="slide-inner">
+    <div class="slide-header">
+      <span class="sh-num">02</span>
+      <span class="sh-title">THE 9 TYPES OF DIGITAL TWINS</span>
+      <span class="sh-tag">IBM MODEL FRAMEWORK</span>
+    </div>
+    <div class="types-intro">
+      Digital twins exist on a spectrum — from a single bolt on a jet engine all the way up to an entire city. IBM defines 9 types across two dimensions: <strong>scope</strong> (component → process) and <strong>intelligence</strong> (descriptive → autonomous).
+    </div>
+    <div class="types-grid">
+
+      <!-- Type 1: Component -->
+      <div class="type-card">
+        <div class="tc-top">
+          <div class="tc-icon">
+            <svg width="40" height="40" viewBox="0 0 40 40"><circle cx="20" cy="20" r="8" fill="none" stroke="#1A8CFF" stroke-width="2"/><circle cx="20" cy="20" r="3" fill="#1A8CFF"/><line x1="20" y1="5" x2="20" y2="12" stroke="#1A8CFF" stroke-width="2"/><line x1="20" y1="28" x2="20" y2="35" stroke="#1A8CFF" stroke-width="2"/><line x1="5" y1="20" x2="12" y2="20" stroke="#1A8CFF" stroke-width="2"/><line x1="28" y1="20" x2="35" y2="20" stroke="#1A8CFF" stroke-width="2"/></svg>
+          </div>
+          <div class="tc-meta">
+            <div class="tc-num">TYPE 01</div>
+            <div class="tc-name">Component Twin</div>
+          </div>
+        </div>
+        <div class="tc-desc">Tracks one specific part — like a single turbine blade. Most granular level of analysis.</div>
+      </div>
+
+      <!-- Type 2: Asset -->
+      <div class="type-card">
+        <div class="tc-top">
+          <div class="tc-icon">
+            <svg width="40" height="40" viewBox="0 0 40 40"><circle cx="20" cy="20" r="6" fill="none" stroke="#1A8CFF" stroke-width="1.5"/><circle cx="9" cy="13" r="4" fill="none" stroke="#1A8CFF" stroke-width="1.5"/><circle cx="31" cy="13" r="4" fill="none" stroke="#1A8CFF" stroke-width="1.5"/><line x1="13" y1="16" x2="16" y2="18" stroke="#1A8CFF" stroke-width="1.5"/><line x1="27" y1="16" x2="24" y2="18" stroke="#1A8CFF" stroke-width="1.5"/><circle cx="9" cy="13" r="2" fill="#F59E0B"/><circle cx="31" cy="13" r="2" fill="#F59E0B"/><circle cx="20" cy="20" r="3" fill="#1A8CFF"/></svg>
+          </div>
+          <div class="tc-meta">
+            <div class="tc-num">TYPE 02</div>
+            <div class="tc-name">Asset Twin</div>
+          </div>
+        </div>
+        <div class="tc-desc">Multiple components working together — studies interactions and generates actionable performance data.</div>
+      </div>
+
+      <!-- Type 3: System -->
+      <div class="type-card">
+        <div class="tc-top">
+          <div class="tc-icon">
+            <svg width="40" height="40" viewBox="0 0 40 40"><rect x="4" y="16" width="10" height="10" rx="2" fill="none" stroke="#1A8CFF" stroke-width="1.5"/><rect x="15" y="6" width="10" height="10" rx="2" fill="none" stroke="#F59E0B" stroke-width="1.5"/><rect x="26" y="16" width="10" height="10" rx="2" fill="none" stroke="#1A8CFF" stroke-width="1.5"/><rect x="15" y="26" width="10" height="10" rx="2" fill="none" stroke="#10B981" stroke-width="1.5"/><line x1="14" y1="21" x2="15" y2="21" stroke="#1A8CFF" stroke-width="1.5"/><line x1="20" y1="16" x2="20" y2="15" stroke="#F59E0B" stroke-width="1.5"/><line x1="26" y1="21" x2="25" y2="21" stroke="#1A8CFF" stroke-width="1.5"/><line x1="20" y1="26" x2="20" y2="25" stroke="#10B981" stroke-width="1.5"/></svg>
+          </div>
+          <div class="tc-meta">
+            <div class="tc-num">TYPE 03</div>
+            <div class="tc-name">System Twin</div>
+          </div>
+        </div>
+        <div class="tc-desc">Broader view showing how multiple assets combine into one fully functioning system.</div>
+      </div>
+
+      <!-- Type 4: Process -->
+      <div class="type-card">
+        <div class="tc-top">
+          <div class="tc-icon">
+            <svg width="40" height="40" viewBox="0 0 40 40"><rect x="2" y="14" width="8" height="14" rx="1" fill="none" stroke="#1A8CFF" stroke-width="1.5"/><rect x="13" y="10" width="8" height="18" rx="1" fill="none" stroke="#F59E0B" stroke-width="1.5"/><rect x="24" y="6" width="8" height="22" rx="1" fill="none" stroke="#10B981" stroke-width="1.5"/><line x1="10" y1="21" x2="13" y2="21" stroke="#1A8CFF" stroke-width="1.5"/><line x1="21" y1="21" x2="24" y2="21" stroke="#F59E0B" stroke-width="1.5"/><path d="M32 21 L38 21" stroke="#10B981" stroke-width="1.5" stroke-dasharray="2,2"/></svg>
+          </div>
+          <div class="tc-meta">
+            <div class="tc-num">TYPE 04</div>
+            <div class="tc-name">Process Twin</div>
+          </div>
+        </div>
+        <div class="tc-desc">Reveals how all systems work across an entire production facility — identifies bottlenecks and inefficiencies.</div>
+      </div>
+
+      <!-- Type 5: Descriptive -->
+      <div class="type-card gold">
+        <div class="tc-top">
+          <div class="tc-icon">
+            <svg width="40" height="40" viewBox="0 0 40 40"><rect x="6" y="4" width="28" height="34" rx="2" fill="none" stroke="#F59E0B" stroke-width="1.5"/><line x1="11" y1="12" x2="29" y2="12" stroke="#F59E0B" stroke-width="1.5"/><line x1="11" y1="18" x2="29" y2="18" stroke="#F59E0B" stroke-width="1"/><line x1="11" y1="23" x2="22" y2="23" stroke="#F59E0B" stroke-width="1"/><rect x="11" y="27" width="18" height="6" rx="1" fill="#F59E0B" opacity=".2"/><line x1="11" y1="27" x2="29" y2="27" stroke="#F59E0B" stroke-width="1"/><line x1="11" y1="33" x2="29" y2="33" stroke="#F59E0B" stroke-width="1"/></svg>
+          </div>
+          <div class="tc-meta">
+            <div class="tc-num" style="color:var(--amber);">TYPE 05</div>
+            <div class="tc-name">Descriptive</div>
+          </div>
+        </div>
+        <div class="tc-desc">Live-editable visual replica of assets or facilities. Design and construction data in real time.</div>
+      </div>
+
+      <!-- Type 6: Informative -->
+      <div class="type-card gold">
+        <div class="tc-top">
+          <div class="tc-icon">
+            <svg width="40" height="40" viewBox="0 0 40 40"><rect x="6" y="4" width="28" height="34" rx="2" fill="none" stroke="#F59E0B" stroke-width="1.5"/><rect x="9" y="7" width="22" height="8" rx="1" fill="#F59E0B" opacity=".15"/><line x1="9" y1="18" x2="31" y2="18" stroke="#F59E0B" stroke-width="1"/><circle cx="12" cy="23" r="2" fill="#F59E0B" opacity=".6"/><line x1="16" y1="23" x2="31" y2="23" stroke="#F59E0B" stroke-width="1"/><circle cx="12" cy="29" r="2" fill="#10B981"/><line x1="16" y1="29" x2="31" y2="29" stroke="#F59E0B" stroke-width="1"/></svg>
+          </div>
+          <div class="tc-meta">
+            <div class="tc-num" style="color:var(--amber);">TYPE 06</div>
+            <div class="tc-name">Informative</div>
+          </div>
+        </div>
+        <div class="tc-desc">Adds a layer of operational and sensor data. The more data added, the stronger the link to its physical twin.</div>
+      </div>
+
+      <!-- Type 7: Predictive -->
+      <div class="type-card green">
+        <div class="tc-top">
+          <div class="tc-icon">
+            <svg width="40" height="40" viewBox="0 0 40 40"><polyline points="4,32 12,22 20,26 30,10" fill="none" stroke="#10B981" stroke-width="2"/><line x1="30" y1="10" x2="38" y2="4" stroke="#10B981" stroke-width="2" stroke-dasharray="3,2"/><polygon points="36,2 40,8 34,8" fill="#10B981"/><line x1="4" y1="36" x2="36" y2="36" stroke="#10B981" stroke-width="1"/><line x1="4" y1="36" x2="4" y2="4" stroke="#10B981" stroke-width="1"/></svg>
+          </div>
+          <div class="tc-meta">
+            <div class="tc-num" style="color:var(--green);">TYPE 07</div>
+            <div class="tc-name">Predictive</div>
+          </div>
+        </div>
+        <div class="tc-desc">Leverages operational data to forecast future behavior — anticipates failures before they happen.</div>
+      </div>
+
+      <!-- Type 8: Comprehensive -->
+      <div class="type-card green">
+        <div class="tc-top">
+          <div class="tc-icon">
+            <svg width="40" height="40" viewBox="0 0 40 40"><circle cx="20" cy="10" r="4" fill="none" stroke="#10B981" stroke-width="1.5"/><line x1="20" y1="14" x2="12" y2="22" stroke="#10B981" stroke-width="1.5"/><line x1="20" y1="14" x2="28" y2="22" stroke="#10B981" stroke-width="1.5"/><circle cx="12" cy="26" r="4" fill="none" stroke="#10B981" stroke-width="1.5"/><circle cx="28" cy="26" r="4" fill="none" stroke="#F59E0B" stroke-width="1.5"/><line x1="12" y1="30" x2="8" y2="36" stroke="#10B981" stroke-width="1.5"/><line x1="12" y1="30" x2="16" y2="36" stroke="#10B981" stroke-width="1.5"/><line x1="28" y1="30" x2="24" y2="36" stroke="#F59E0B" stroke-width="1.5"/><line x1="28" y1="30" x2="32" y2="36" stroke="#F59E0B" stroke-width="1.5"/></svg>
+          </div>
+          <div class="tc-meta">
+            <div class="tc-num" style="color:var(--green);">TYPE 08</div>
+            <div class="tc-name">Comprehensive</div>
+          </div>
+        </div>
+        <div class="tc-desc">Simulates possible future scenarios — asks "what if?" questions and models multiple outcomes.</div>
+      </div>
+
+      <!-- Type 9: Autonomous -->
+      <div class="type-card green">
+        <div class="tc-top">
+          <div class="tc-icon">
+            <svg width="40" height="40" viewBox="0 0 40 40"><rect x="10" y="6" width="20" height="16" rx="3" fill="none" stroke="#10B981" stroke-width="1.5"/><circle cx="16" cy="14" r="2" fill="#10B981"/><circle cx="24" cy="14" r="2" fill="#10B981"/><line x1="20" y1="22" x2="20" y2="28" stroke="#10B981" stroke-width="1.5"/><rect x="8" y="28" width="24" height="8" rx="2" fill="none" stroke="#10B981" stroke-width="1.5"/><line x1="14" y1="32" x2="26" y2="32" stroke="#10B981" stroke-width="1.5"/><circle cx="20" cy="32" r="2" fill="#F59E0B"><animate attributeName="r" values="2;3;2" dur="1.5s" repeatCount="indefinite"/></circle><line x1="4" y1="30" x2="8" y2="32" stroke="#10B981" stroke-width="1.5"/><line x1="36" y1="30" x2="32" y2="32" stroke="#10B981" stroke-width="1.5"/></svg>
+          </div>
+          <div class="tc-meta">
+            <div class="tc-num" style="color:var(--green);">TYPE 09</div>
+            <div class="tc-name">Autonomous</div>
+          </div>
+        </div>
+        <div class="tc-desc">The frontier — learns and acts on behalf of users. Closes the loop between insight and physical action.</div>
+      </div>
+
+    </div>
+    <div class="presenter-box">
+      <div class="pb-label">▸ PRESENTER NOTES</div>
+      <ul>
+        <li>Blue = scope types (what you're tracking) · Gold = intelligence types · Green = capability tiers</li>
+        <li>Drone example: Phantom-X uses Types 1–4 for physical structure + Types 7–8 for mission planning</li>
+        <li>Type 9 (Autonomous) is the destination — AI that acts without a human in the loop</li>
+        <li>Ask audience: "Where would you put a hospital on this scale?"</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════
+     SLIDE 4 — DIGITAL TWINS + OTHER TECH
+══════════════════════════════════════ -->
+<div class="slide" id="s4">
+  <div class="slide-top-bar">
+    <span class="stb-left">WJU-MBA-670 // DIGITAL TWINS</span>
+    <span class="stb-right">SECTION 02B // TECHNOLOGY CONVERGENCE</span>
+  </div>
+  <div class="slide-inner">
+    <div class="slide-header">
+      <span class="sh-num">02B</span>
+      <span class="sh-title">DIGITAL TWINS × EMERGING TECHNOLOGY</span>
+      <span class="sh-tag">CONVERGENCE ANALYSIS</span>
+    </div>
+
+    <div class="synergy-bar">
+      <span class="sb-title">THE MULTIPLIER EFFECT</span>
+      <p>Digital Twins become exponentially more powerful when combined with other emerging technologies. Each pairing unlocks a new level of capability that neither could achieve alone.</p>
+    </div>
+
+    <div class="tech-grid">
+      <div class="tech-card">
+        <div class="tch-icon">🤖</div>
+        <h3>ARTIFICIAL INTELLIGENCE</h3>
+        <p>AI reads twin data continuously — predicting failures, auto-optimizing performance, and enabling autonomous decisions without human input.</p>
+      </div>
+      <div class="tech-card" style="border-top-color:var(--amber);">
+        <div class="tch-icon">⚛️</div>
+        <h3>QUANTUM COMPUTING</h3>
+        <p>Classical computers can't run millions of scenario variations. Quantum handles that complexity — making comprehensive twins truly real-time.</p>
+      </div>
+      <div class="tech-card" style="border-top-color:var(--green);">
+        <div class="tch-icon">🥽</div>
+        <h3>VIRTUAL REALITY</h3>
+        <p>Engineers step inside a digital twin — walking through a building, aircraft, or factory before it's built or while it's operating.</p>
+      </div>
+      <div class="tech-card" style="border-top-color:#A78BFA;">
+        <div class="tch-icon">👁️</div>
+        <h3>AUGMENTED REALITY</h3>
+        <p>Overlay twin data onto the physical world — a technician sees engine health diagnostics floating above the actual engine in real time.</p>
+      </div>
+      <div class="tech-card" style="border-top-color:#F87171;">
+        <div class="tch-icon">🌐</div>
+        <h3>EXTENDED REALITY (XR)</h3>
+        <p>XR merges VR + AR into one continuum — operators interact with twins fluidly across both real and virtual environments simultaneously.</p>
+      </div>
+    </div>
+
+    <div style="background:#F0F7FF;border:1px solid var(--border);padding:14px 18px;margin-bottom:8px;">
+      <strong style="font-family:'Rajdhani',sans-serif;font-size:15px;color:var(--blueprint);">DEFENSE APPLICATION — PHANTOM-X DRONE:</strong>
+      <p style="font-size:12px;color:var(--sub);margin-top:6px;line-height:1.6;">AI predicts weapon system wear · Quantum runs 1,000 mission simulations simultaneously · AR overlays flight path onto the physical cockpit · XR lets mission planners rehearse strikes in a virtual combat environment before deployment.</p>
+    </div>
+
+    <div class="presenter-box">
+      <div class="pb-label">▸ PRESENTER NOTES</div>
+      <ul>
+        <li>Frame this as "the power grid" — Digital Twin is the wire; AI/Quantum/XR are the appliances</li>
+        <li>The Phantom-X example shows all five converging in one real system</li>
+        <li>Quantum is still emerging — be honest that it's 5–10 years from full deployment</li>
+        <li>AR example is happening NOW — Airbus uses it on factory floors today</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════
+     SLIDE 5 — CURRENT COMMERCIAL
+══════════════════════════════════════ -->
+<div class="slide" id="s5">
+  <div class="slide-top-bar">
+    <span class="stb-left">WJU-MBA-670 // DIGITAL TWINS</span>
+    <span class="stb-right">SECTION 03 // CURRENT COMMERCIAL</span>
+  </div>
+  <div class="slide-inner">
+    <div class="slide-header">
+      <span class="sh-num">03</span>
+      <span class="sh-title">CURRENT COMMERCIAL APPLICATIONS</span>
+      <span class="sh-tag">INDUSTRY ADOPTION — 2024–2026</span>
+    </div>
+
+    <div class="market-bar">
+      <div class="mb-stat"><div class="mb-num">$73B+</div><div class="mb-label">GLOBAL MARKET 2025</div></div>
+      <div class="mb-stat"><div class="mb-num">38%</div><div class="mb-label">ANNUAL GROWTH RATE</div></div>
+      <div class="mb-stat"><div class="mb-num">60%</div><div class="mb-label">OF FORTUNE 500 DEPLOYING</div></div>
+      <div class="mb-stat"><div class="mb-num">25%</div><div class="mb-label">AVG MAINTENANCE COST REDUCTION</div></div>
+    </div>
+
+    <div class="comm-grid">
+      <div class="comm-card">
+        <div class="cc-icon">✈️</div>
+        <div>
+          <h3>Aerospace & Defense</h3>
+          <ul>
+            <li>GE Aviation twins every jet engine — predicts maintenance before failure</li>
+            <li>Lockheed Martin uses twins for F-35 lifecycle management</li>
+            <li>Defense contractors simulate mission scenarios before deployment</li>
+          </ul>
+        </div>
+      </div>
+      <div class="comm-card">
+        <div class="cc-icon">🏭</div>
+        <div>
+          <h3>Manufacturing</h3>
+          <ul>
+            <li>Siemens runs entire digital factories before physical construction</li>
+            <li>BMW twins every car on the assembly line — zero-defect goals</li>
+            <li>Reduces production line downtime by up to 30%</li>
+          </ul>
+        </div>
+      </div>
+      <div class="comm-card">
+        <div class="cc-icon">🏙️</div>
+        <div>
+          <h3>Smart Cities & Infrastructure</h3>
+          <ul>
+            <li>Singapore has a complete city-scale digital twin — tracks utilities, traffic, and zoning</li>
+            <li>Offshore drilling platforms monitored 24/7 with remote twins</li>
+            <li>Bridge and dam structural health monitored without physical inspectors</li>
+          </ul>
+        </div>
+      </div>
+      <div class="comm-card">
+        <div class="cc-icon">⚡</div>
+        <div>
+          <h3>Energy & Utilities</h3>
+          <ul>
+            <li>Wind farms twin each turbine blade — optimizing output in real time</li>
+            <li>Power grids use twins to model load distribution and failure risks</li>
+            <li>Oil & gas uses twins to simulate drilling before breaking ground</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <div class="presenter-box">
+      <div class="pb-label">▸ PRESENTER NOTES</div>
+      <ul>
+        <li>Singapore city twin is the most dramatic example — mention it by name</li>
+        <li>GE Aviation saves millions per avoided engine failure — connect to ROI framing</li>
+        <li>Key insight: twins don't just save money, they enable decisions that weren't possible before</li>
+        <li>Defense adoption is accelerating rapidly — pivot to Phantom-X demo</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════
+     SLIDE 6 — FUTURE COMMERCIAL
+══════════════════════════════════════ -->
+<div class="slide" id="s6">
+  <div class="slide-top-bar">
+    <span class="stb-left">WJU-MBA-670 // DIGITAL TWINS</span>
+    <span class="stb-right">SECTION 04 // FUTURE IMPLICATIONS</span>
+  </div>
+  <div class="slide-inner">
+    <div class="slide-header">
+      <span class="sh-num">04</span>
+      <span class="sh-title">FUTURE COMMERCIAL IMPLICATIONS</span>
+      <span class="sh-tag">MY ESTIMATION — 2026–2040</span>
+    </div>
+
+    <div class="future-timeline">
+      <div class="ft-item">
+        <div class="ft-year">2027</div>
+        <div class="ft-content">
+          <h3>Autonomous Supply Chains</h3>
+          <p>Digital twins of entire global supply chains will self-optimize in real time — predicting disruptions (weather, geopolitical) and rerouting shipments before human planners even see the problem.</p>
+          <div class="ft-tags"><span class="ft-tag">LOGISTICS</span><span class="ft-tag">AI + TWIN</span><span class="ft-tag">AUTONOMOUS</span></div>
+        </div>
+      </div>
+      <div class="ft-item">
+        <div class="ft-year">2030</div>
+        <div class="ft-content">
+          <h3>Human Body Digital Twins</h3>
+          <p>Personalized medical twins built from biometric data — simulating how your body responds to treatments, surgeries, or medications before doctors touch you. Precision medicine redefined.</p>
+          <div class="ft-tags"><span class="ft-tag">HEALTHCARE</span><span class="ft-tag">BIOTECH</span><span class="ft-tag">PERSONALIZED MEDICINE</span></div>
+        </div>
+      </div>
+      <div class="ft-item">
+        <div class="ft-year">2033</div>
+        <div class="ft-content">
+          <h3>Defense: Fully Autonomous Combat Systems</h3>
+          <p>Drone swarms with shared digital twins — each unit updating the collective model, AI making tactical decisions in milliseconds. The Phantom-X concept becomes operational reality.</p>
+          <div class="ft-tags"><span class="ft-tag">DEFENSE</span><span class="ft-tag">DRONE SWARM</span><span class="ft-tag">AUTONOMOUS WARFARE</span></div>
+        </div>
+      </div>
+      <div class="ft-item">
+        <div class="ft-year">2040</div>
+        <div class="ft-content">
+          <h3>Earth-Scale Digital Twin</h3>
+          <p>The EU's Destination Earth project aims to build a full-planet model — climate systems, ocean currents, land use — enabling governments to simulate policy decisions before enacting them.</p>
+          <div class="ft-tags"><span class="ft-tag">CLIMATE</span><span class="ft-tag">GOVERNANCE</span><span class="ft-tag">PLANETARY SCALE</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="presenter-box">
+      <div class="pb-label">▸ PRESENTER NOTES</div>
+      <ul>
+        <li>These are MY estimations — frame them as informed projections, not guaranteed facts</li>
+        <li>Human body twins exist in early form today (Dassault Systèmes "Living Heart" project)</li>
+        <li>Autonomous combat systems raise major ethical questions — bridge to the theological slide</li>
+        <li>Destination Earth is a real EU initiative — credibility anchor for the 2040 claim</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════
+     SLIDE 7 — THEOLOGICAL IMPLICATIONS
+══════════════════════════════════════ -->
+<div class="slide" id="s7">
+  <div class="slide-top-bar">
+    <span class="stb-left">WJU-MBA-670 // DIGITAL TWINS</span>
+    <span class="stb-right">SECTION 05 // THEOLOGICAL PERSPECTIVE</span>
+  </div>
+  <div class="slide-inner">
+    <div class="slide-header">
+      <span class="sh-num">05</span>
+      <span class="sh-title">THEOLOGICAL IMPLICATIONS</span>
+      <span class="sh-tag">A CHRIST-CENTERED PERSPECTIVE</span>
+    </div>
+
+    <div class="theo-intro">
+      <p>"The Lord God took the man and put him in the garden to work it and keep it." — The Hebrew words are <em>abad</em> (to cultivate, develop) and <em>shamar</em> (to guard, protect). Long before Digital Twins existed, God gave humanity both the mandate to build and the obligation to protect. These four questions ask whether we are honoring both.</p>
+      <div class="source">Genesis 2:15 (ESV) — The Original Mandate</div>
+    </div>
+
+    <div class="theo-grid" style="grid-template-columns:1fr 1fr;">
+
+      <!-- CARD 1: Stewardship -->
+      <div class="theo-card" style="border-left-color:var(--sky);">
+        <h3 style="color:var(--blueprint);gap:12px;margin-bottom:12px;">
+          <svg width="28" height="28" viewBox="0 0 28 28" fill="none" style="flex-shrink:0;">
+            <circle cx="14" cy="12" r="8" fill="none" stroke="#003A6E" stroke-width="1.8"/>
+            <path d="M8 16 Q10 22 14 24 Q18 22 20 16" fill="none" stroke="#003A6E" stroke-width="1.5"/>
+            <path d="M9 10 Q11 7 14 8 Q17 7 19 10" fill="none" stroke="#1A8CFF" stroke-width="1.2"/>
+            <line x1="14" y1="4" x2="14" y2="8" stroke="#003A6E" stroke-width="1.5"/>
+            <path d="M11 12 Q13 10 15 12 Q17 14 14 16 Q11 14 11 12Z" fill="#1A8CFF" opacity=".3"/>
+            <line x1="6" y1="12" x2="8" y2="12" stroke="#003A6E" stroke-width="1.2"/>
+            <line x1="20" y1="12" x2="22" y2="12" stroke="#003A6E" stroke-width="1.2"/>
+          </svg>
+          STEWARDSHIP OF CREATION
+        </h3>
+        <p>The biblical mandate in Genesis 2:15 gives humanity two responsibilities: <em>abad</em> — to develop and cultivate — and <em>shamar</em> — to guard and protect. Digital Twins are among the most powerful stewardship tools ever created. We can now model watersheds, power grids, and climate systems before our decisions harm them.</p>
+        <p style="margin-top:8px;">But stewardship requires humility. The Tower of Babel pattern warns us: technology that begins as responsible development can quietly become an assertion of self-sufficiency — the belief that we no longer need God's wisdom because we have enough data. Our twin models are approximations; the complexity of God's creation will always exceed our models. Proverbs 3:19 reminds us: "By wisdom the Lord laid the earth's foundations" — not by simulation.</p>
+        <p style="margin-top:8px;"><strong style="color:var(--blueprint);">The faithful use:</strong> Deploy twins to protect, optimize, and conserve as an act of worship. The unfaithful use: treat our models of creation as more authoritative than creation itself.</p>
+        <div class="verse">Genesis 2:15 · Proverbs 3:19 · Proverbs 27:23</div>
+      </div>
+
+      <!-- CARD 2: Autonomous Warfare -->
+      <div class="theo-card" style="border-left-color:#C0392B;">
+        <h3 style="color:#8B0000;gap:12px;margin-bottom:12px;">
+          <svg width="28" height="28" viewBox="0 0 28 28" fill="none" style="flex-shrink:0;">
+            <!-- Scales of justice, one side broken/tipping -->
+            <line x1="14" y1="4" x2="14" y2="22" stroke="#8B0000" stroke-width="1.8"/>
+            <line x1="6" y1="8" x2="22" y2="8" stroke="#8B0000" stroke-width="1.5"/>
+            <!-- Left pan (level) -->
+            <path d="M4 8 L8 8" stroke="#8B0000" stroke-width="1.2"/>
+            <path d="M4 12 Q6 14 8 12" fill="none" stroke="#8B0000" stroke-width="1.2"/>
+            <line x1="4" y1="8" x2="4" y2="12" stroke="#8B0000" stroke-width="1.2"/>
+            <line x1="8" y1="8" x2="8" y2="12" stroke="#8B0000" stroke-width="1.2"/>
+            <!-- Right pan (tipped down — unbalanced) -->
+            <path d="M20 8 L24 8" stroke="#C0392B" stroke-width="1.2"/>
+            <path d="M20 15 Q22 17 24 15" fill="none" stroke="#C0392B" stroke-width="1.2"/>
+            <line x1="20" y1="8" x2="20" y2="15" stroke="#C0392B" stroke-width="1.2"/>
+            <line x1="24" y1="8" x2="24" y2="15" stroke="#C0392B" stroke-width="1.2"/>
+            <!-- Circuit break symbol -->
+            <line x1="12" y1="20" x2="16" y2="20" stroke="#C0392B" stroke-width="1.5" stroke-dasharray="2,1"/>
+            <line x1="14" y1="22" x2="10" y2="26" stroke="#8B0000" stroke-width="1.2"/>
+            <line x1="14" y1="22" x2="18" y2="26" stroke="#8B0000" stroke-width="1.2"/>
+          </svg>
+          THE ETHICS OF AUTONOMOUS WARFARE
+        </h3>
+        <p>Just War Theory, developed by Augustine and Aquinas, requires proportionality and discrimination — the ability to distinguish combatants from civilians, and to apply only the force necessary. These are not data problems. They are moral acts that require a conscience.</p>
+        <p style="margin-top:8px;">When a combat drone's digital twin authorizes a strike without a human in the decision loop, we have created an instrument of lethal force with no soul, no capacity for grief, and no moral accountability. Augustine wrote that "the heart of the just warrior grieves even in victory." An algorithm cannot grieve. Romans 13:4 describes governing authority as "God's servant" — a servant implies agency, conscience, and answerability. A machine has none of these.</p>
+        <p style="margin-top:8px;"><strong style="color:#8B0000;">The deeper danger:</strong> corporations and governments using algorithmic decision-making to escape moral responsibility. "The algorithm decided" is not absolution. Every person killed by an autonomous system is an Imago Dei bearer. That demands a human who can carry the moral weight of that decision.</p>
+        <div class="verse" style="color:#C0392B;">Romans 13:4 · Proverbs 11:14 · Matthew 5:9</div>
+      </div>
+
+      <!-- CARD 3: Surveillance -->
+      <div class="theo-card" style="border-left-color:#7C3AED;">
+        <h3 style="color:#4C1D95;gap:12px;margin-bottom:12px;">
+          <svg width="28" height="28" viewBox="0 0 28 28" fill="none" style="flex-shrink:0;">
+            <!-- Eye -->
+            <path d="M4 14 Q14 4 24 14 Q14 24 4 14Z" fill="none" stroke="#4C1D95" stroke-width="1.6"/>
+            <circle cx="14" cy="14" r="4" fill="none" stroke="#4C1D95" stroke-width="1.4"/>
+            <circle cx="14" cy="14" r="1.8" fill="#7C3AED"/>
+            <!-- Data rings radiating out -->
+            <path d="M2 14 Q4 8 8 6" fill="none" stroke="#7C3AED" stroke-width="1" stroke-dasharray="2,2" opacity=".6"/>
+            <path d="M26 14 Q24 8 20 6" fill="none" stroke="#7C3AED" stroke-width="1" stroke-dasharray="2,2" opacity=".6"/>
+            <!-- Data nodes being collected -->
+            <circle cx="5" cy="9" r="1.5" fill="#7C3AED" opacity=".5"/>
+            <circle cx="23" cy="9" r="1.5" fill="#7C3AED" opacity=".5"/>
+            <circle cx="14" cy="4" r="1.5" fill="#7C3AED" opacity=".5"/>
+            <!-- Cross/restriction indicator -->
+            <line x1="22" y1="20" x2="26" y2="24" stroke="#C0392B" stroke-width="1.5"/>
+            <line x1="26" y1="20" x2="22" y2="24" stroke="#C0392B" stroke-width="1.5"/>
+          </svg>
+          SURVEILLANCE &amp; THE DIGNITY OF PERSONS
+        </h3>
+        <p>Psalm 139 says: "You have searched me and known me... you discern my thoughts from afar." This is the language of omniscience — and it belongs uniquely to a God of perfect love and perfect justice. When states or corporations build surveillance-scale digital twins of human behavior, they are approximating divine omniscience without the divine character that makes it safe.</p>
+        <p style="margin-top:8px;">Smart city twins that aggregate behavioral data — movement patterns, purchasing habits, social connections — can predict your political leanings, your financial risk, your physical location at any hour. This is not theoretical. China's Social Credit System is a city-scale digital twin of social behavior used to reward and punish citizens. In the U.S., predictive policing algorithms pre-judge people based on data models before any crime occurs.</p>
+        <p style="margin-top:8px;">Ecclesiastes 3:11 says God "put eternity in their hearts" — every human person carries an irreducible mystery that no data model can fully capture. When we treat people as reducible to their data, we violate the sanctity of the individual conscience that God alone fully knows. 2 Corinthians 3:17 is clear: "where the Spirit of the Lord is, there is freedom."</p>
+        <div class="verse" style="color:#7C3AED;">Psalm 139:1–2 · Ecclesiastes 3:11 · 2 Corinthians 3:17</div>
+      </div>
+
+      <!-- CARD 4: Faithful Leadership -->
+      <div class="theo-card" style="border-left-color:var(--amber);">
+        <h3 style="color:#92400E;gap:12px;margin-bottom:12px;">
+          <svg width="28" height="28" viewBox="0 0 28 28" fill="none" style="flex-shrink:0;">
+            <!-- Compass -->
+            <circle cx="14" cy="14" r="10" fill="none" stroke="#92400E" stroke-width="1.6"/>
+            <circle cx="14" cy="14" r="7" fill="none" stroke="#92400E" stroke-width="1" opacity=".4"/>
+            <!-- Compass needle (pointing to true north / cross) -->
+            <polygon points="14,6 16,14 14,13 12,14" fill="#F59E0B"/>
+            <polygon points="14,22 16,14 14,15 12,14" fill="#92400E" opacity=".5"/>
+            <!-- Cardinal marks -->
+            <line x1="14" y1="4" x2="14" y2="6" stroke="#92400E" stroke-width="1.5"/>
+            <line x1="24" y1="14" x2="22" y2="14" stroke="#92400E" stroke-width="1"/>
+            <line x1="4" y1="14" x2="6" y2="14" stroke="#92400E" stroke-width="1"/>
+            <!-- Cross on north point -->
+            <line x1="13" y1="2" x2="15" y2="2" stroke="#F59E0B" stroke-width="1.5"/>
+            <line x1="14" y1="1" x2="14" y2="3" stroke="#F59E0B" stroke-width="1.5"/>
+            <circle cx="14" cy="14" r="1.5" fill="#92400E"/>
+          </svg>
+          FAITHFUL LEADERSHIP IN THE DIGITAL AGE
+        </h3>
+        <p>Daniel 1 gives us the model: Daniel served with excellence in the most technologically and politically sophisticated empire of his day — without surrendering his convictions. He engaged the king's court without becoming the king's tool. This is the calling of every Christian leader entering an MBA program in 2025.</p>
+        <p style="margin-top:8px;">The next decade will see Digital Twin systems deployed across healthcare, defense, finance, and urban infrastructure at massive scale. The boards and C-suites making those decisions will include MBAs being trained right now. The question is not whether Christians will be in those rooms — it's whether they will be equipped to ask the question no one else is asking: <em>"Should we?"</em> not just <em>"Can we?"</em></p>
+        <p style="margin-top:8px;">Micah 6:8 provides a three-part technology ethics framework: <strong>Do justice</strong> — whose rights and dignity are at stake? <strong>Love mercy</strong> — who could be harmed by this deployment? <strong>Walk humbly</strong> — what don't we yet understand about the second-order consequences of what we're building? Luke 16:10 adds the multiplier effect of character: "Faithful in little, faithful in much." How we handle small data decisions now determines the leader we become when the stakes are catastrophic.</p>
+        <div class="verse" style="color:#92400E;">Daniel 1:8 · Micah 6:8 · Luke 16:10 · Colossians 3:23</div>
+      </div>
+
+    </div>
+
+    <div class="theo-summary">
+      <div class="ts-icon">
+        <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
+          <line x1="16" y1="3" x2="16" y2="29" stroke="#F59E0B" stroke-width="2.5" stroke-linecap="round"/>
+          <line x1="7" y1="10" x2="25" y2="10" stroke="#F59E0B" stroke-width="2.5" stroke-linecap="round"/>
+        </svg>
+      </div>
+      <p>Digital Twins are neither inherently good nor evil — they are a <strong>mirror of the intentions behind them</strong>. The Christian call is not to fear or reject this technology, but to engage it with wisdom, accountability, and the relentless question: <strong>"Does this serve the flourishing of those made in God's image?"</strong></p>
+    </div>
+
+    <div class="presenter-box" style="margin-top:10px;">
+      <div class="pb-label">▸ PRESENTER NOTES</div>
+      <ul>
+        <li>Open with the Hebrew words — abad and shamar. It shows you went deeper than the surface level on this question</li>
+        <li>Autonomous warfare: ask the room — "Can an algorithm grieve? Augustine said the just warrior must." That question lands hard</li>
+        <li>Surveillance card: the Psalm 139 contrast is powerful — God's omniscience is paired with perfect love; government surveillance is not</li>
+        <li>Close on the Daniel principle — you ARE the next generation of leaders in those boardrooms. This is personal, not theoretical</li>
+        <li>The Micah 6:8 framework (do justice / love mercy / walk humbly) is a tool they can use tomorrow — give it to them</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════
+     SLIDE 8 — PHANTOM-X SIMULATOR
+══════════════════════════════════════ -->
+<div class="slide" id="s8">
+  <div class="slide-top-bar">
+    <span class="stb-left">PHANTOM-X // COMBAT DRONE DIGITAL TWIN</span>
+    <span class="stb-right" id="threatStatus">■ NOMINAL — ALL SYSTEMS GO</span>
+  </div>
+  <div class="sim-wrapper">
+    <!-- CONTROLS PANEL -->
+    <div class="sim-controls">
+      <div class="ctrl-header">// MISSION PARAMETERS — ADJUST TO SIMULATE</div>
+
+      <div class="ctrl-group">
+        <div class="ctrl-label">ALTITUDE</div>
+        <div class="ctrl-name">Flight Ceiling</div>
+        <input type="range" class="ctrl-slider" id="altSlider" min="500" max="50000" value="15000" step="500">
+        <div class="ctrl-value"><span id="altVal">15,000</span> ft</div>
+      </div>
+      <div class="ctrl-divider"></div>
+
+      <div class="ctrl-group">
+        <div class="ctrl-label">PAYLOAD</div>
+        <div class="ctrl-name">Weapons Load (lbs)</div>
+        <input type="range" class="ctrl-slider" id="paySlider" min="0" max="4000" value="1200" step="100">
+        <div class="ctrl-value"><span id="payVal">1,200</span> lbs</div>
+      </div>
+      <div class="ctrl-divider"></div>
+
+      <div class="ctrl-group">
+        <div class="ctrl-label">FUEL</div>
+        <div class="ctrl-name">Fuel Capacity (gals)</div>
+        <input type="range" class="ctrl-slider" id="fuelSlider" min="200" max="2000" value="1000" step="50">
+        <div class="ctrl-value"><span id="fuelVal">1,000</span> gal</div>
+      </div>
+      <div class="ctrl-divider"></div>
+
+      <div class="ctrl-group">
+        <div class="ctrl-label">HARDPOINTS</div>
+        <div class="ctrl-name">Weapon Stations</div>
+        <input type="range" class="ctrl-slider" id="wpnSlider" min="0" max="8" value="4" step="1">
+        <div class="ctrl-value"><span id="wpnVal">4</span> / 8 active</div>
+      </div>
+      <div class="ctrl-divider"></div>
+
+      <div class="ctrl-group">
+        <div class="ctrl-label">STEALTH</div>
+        <div class="ctrl-name">Radar Cross Section</div>
+        <input type="range" class="ctrl-slider" id="stealthSlider" min="0" max="100" value="60" step="5">
+        <div class="ctrl-value"><span id="stealthVal">60</span>% suppression</div>
+      </div>
+      <div class="ctrl-divider"></div>
+
+      <div style="margin-top:auto;padding-top:8px;">
+        <div class="ctrl-label" style="margin-bottom:6px;">// TWIN STATUS</div>
+        <div style="display:flex;align-items:center;gap:6px;">
+          <div style="width:8px;height:8px;border-radius:50%;background:#10B981;" id="syncDot"></div>
+          <span style="font-family:'Share Tech Mono',monospace;font-size:9px;color:rgba(255,255,255,.4);letter-spacing:1px;" id="syncLabel">LIVE SYNC — ACTIVE</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- DISPLAY PANEL -->
+    <div class="sim-display">
+      <div class="sim-drone-view">
+        <div class="sim-grid-bg"></div>
+
+        <!-- Altitude indicator -->
+        <div class="altitude-line">
+          <div class="alt-bar" id="altBar" style="height:80px;"></div>
+          <div class="alt-marker">ALTITUDE</div>
+        </div>
+
+        <!-- DRONE SVG (responsive) -->
+        <div class="sim-drone-container">
+          <svg id="simDrone" width="340" height="180" viewBox="0 0 340 180" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <!-- Main body -->
+            <rect x="130" y="66" width="80" height="42" rx="6" fill="#001A38" stroke="#1A8CFF" stroke-width="1.5"/>
+            <!-- Cockpit -->
+            <ellipse cx="170" cy="72" rx="24" ry="12" fill="#002A55" stroke="#1A8CFF" stroke-width="1"/>
+            <ellipse cx="170" cy="70" rx="14" ry="7" fill="#003870" stroke="#1A8CFF" stroke-width=".5"/>
+            <!-- Wings -->
+            <polygon points="130,74 10,52 14,82 130,92" fill="#001530" stroke="#1A8CFF" stroke-width="1"/>
+            <polygon points="210,74 330,52 326,82 210,92" fill="#001530" stroke="#1A8CFF" stroke-width="1"/>
+            <!-- Tail -->
+            <rect x="152" y="104" width="36" height="34" rx="3" fill="#001020" stroke="#1A8CFF" stroke-width="1"/>
+            <polygon points="152,104 120,140 165,134" fill="#001A38" stroke="#1A8CFF" stroke-width="1"/>
+            <polygon points="188,104 220,140 175,134" fill="#001A38" stroke="#1A8CFF" stroke-width="1"/>
+            <!-- Engine pods -->
+            <ellipse cx="66" cy="74" rx="18" ry="8" fill="#002040" stroke="#F59E0B" stroke-width="1.5"/>
+            <ellipse cx="274" cy="74" rx="18" ry="8" fill="#002040" stroke="#F59E0B" stroke-width="1.5"/>
+            <!-- Engine glow -->
+            <ellipse cx="48" cy="74" rx="6" ry="4" fill="#F59E0B" opacity=".8">
+              <animate attributeName="opacity" values="0.8;0.3;0.8" dur=".8s" repeatCount="indefinite"/>
+            </ellipse>
+            <ellipse cx="292" cy="74" rx="6" ry="4" fill="#F59E0B" opacity=".8">
+              <animate attributeName="opacity" values="0.8;0.3;0.8" dur=".8s" repeatCount="indefinite" begin=".4s"/>
+            </ellipse>
+            <!-- Weapons hardpoints (shown/hidden dynamically) -->
+            <g id="wpn1"><rect x="40" y="84" width="36" height="7" rx="2" fill="#4A5568" stroke="#1A8CFF" stroke-width=".5"/><rect x="43" y="82" width="8" height="4" rx="1" fill="#6B7280"/></g>
+            <g id="wpn2"><rect x="90" y="84" width="36" height="7" rx="2" fill="#4A5568" stroke="#1A8CFF" stroke-width=".5"/><rect x="93" y="82" width="8" height="4" rx="1" fill="#6B7280"/></g>
+            <g id="wpn3"><rect x="214" y="84" width="36" height="7" rx="2" fill="#4A5568" stroke="#1A8CFF" stroke-width=".5"/><rect x="217" y="82" width="8" height="4" rx="1" fill="#6B7280"/></g>
+            <g id="wpn4"><rect x="264" y="84" width="36" height="7" rx="2" fill="#4A5568" stroke="#1A8CFF" stroke-width=".5"/><rect x="267" y="82" width="8" height="4" rx="1" fill="#6B7280"/></g>
+            <g id="wpn5" style="opacity:0"><rect x="22" y="90" width="28" height="6" rx="2" fill="#6B7280" stroke="#F59E0B" stroke-width=".5"/></g>
+            <g id="wpn6" style="opacity:0"><rect x="290" y="90" width="28" height="6" rx="2" fill="#6B7280" stroke="#F59E0B" stroke-width=".5"/></g>
+            <!-- Data readout lines -->
+            <line x1="210" y1="70" x2="260" y2="50" stroke="#1A8CFF" stroke-width=".5" stroke-dasharray="3,3" opacity=".4"/>
+            <line x1="130" y1="70" x2="80" y2="50" stroke="#1A8CFF" stroke-width=".5" stroke-dasharray="3,3" opacity=".4"/>
+            <!-- Sensor nodes -->
+            <circle cx="170" cy="83" r="4" fill="#1A8CFF" opacity=".8">
+              <animate attributeName="opacity" values="0.8;0.2;0.8" dur="1.5s" repeatCount="indefinite"/>
+            </circle>
+            <circle cx="66" cy="74" r="3" fill="#10B981">
+              <animate attributeName="opacity" values="1;0.3;1" dur="1.1s" repeatCount="indefinite"/>
+            </circle>
+            <circle cx="274" cy="74" r="3" fill="#10B981">
+              <animate attributeName="opacity" values="1;0.3;1" dur="1.1s" repeatCount="indefinite" begin=".5s"/>
+            </circle>
+          </svg>
+
+          <!-- Dynamic callouts -->
+          <div class="sim-callout" id="calloutRow">
+            <span class="callout sky" id="callAlt">ALT: 15,000 ft</span>
+            <span class="callout amber" id="callPay">PAYLOAD: 1,200 lbs</span>
+            <span class="callout green" id="callRange">RANGE: 1,240 mi</span>
+            <span class="callout green" id="callEndure">ENDURANCE: 18.2 hrs</span>
+            <span class="callout sky" id="callStealth">STEALTH: 60%</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Risk bar -->
+      <div class="risk-bar-wrap">
+        <div class="rb-label">
+          <span>// MISSION RISK INDEX</span>
+          <span id="riskPct">32%</span>
+        </div>
+        <div class="rb-track">
+          <div class="rb-fill" id="riskFill" style="width:32%;background:#10B981;"></div>
+        </div>
+      </div>
+
+      <!-- Advisory -->
+      <div class="sim-advisory" id="advisory" style="background:rgba(16,185,129,.08);color:#10B981;">
+        ▸ ALL SYSTEMS NOMINAL — MISSION READY. Twin sync active across all 9 sensor nodes.
+      </div>
+
+      <!-- Telemetry row -->
+      <div class="sim-telemetry">
+        <div class="telem-cell">
+          <div class="telem-label">THRUST RATIO</div>
+          <div class="telem-value" id="tTrust" style="color:#1A8CFF;">0.81<span class="telem-unit">TWR</span></div>
+        </div>
+        <div class="telem-cell">
+          <div class="telem-label">FUEL BURN</div>
+          <div class="telem-value" id="tBurn" style="color:#F59E0B;">55<span class="telem-unit">gal/hr</span></div>
+        </div>
+        <div class="telem-cell">
+          <div class="telem-label">RADAR XSEC</div>
+          <div class="telem-value" id="tRCS" style="color:#10B981;">0.04<span class="telem-unit">m²</span></div>
+        </div>
+        <div class="telem-cell">
+          <div class="telem-label">STRUCTURAL G</div>
+          <div class="telem-value" id="tGload" style="color:#1A8CFF;">3.2<span class="telem-unit">G</span></div>
+        </div>
+        <div class="telem-cell">
+          <div class="telem-label">TWIN LATENCY</div>
+          <div class="telem-value" id="tLatency" style="color:#10B981;">12<span class="telem-unit">ms</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+</div><!-- end deck -->
+
+<!-- NAV BAR -->
+<div class="nav-bar">
+  <span class="slide-counter" id="slideCounter">SLIDE 01 / 08</span>
+  <div class="nav-dots" id="navDots"></div>
+  <div class="nav-btns">
+    <button class="nav-btn" onclick="changeSlide(-1)">◀ PREV</button>
+    <button class="nav-btn primary" onclick="changeSlide(1)">NEXT ▶</button>
+  </div>
+</div>
+
+<script>
+/* ══════════════════════════════════
+   SLIDE NAVIGATION
+══════════════════════════════════ */
+const slides = document.querySelectorAll('.slide');
+const dots = document.getElementById('navDots');
+const counter = document.getElementById('slideCounter');
+let current = 0;
+
+slides.forEach((_,i)=>{
+  const d = document.createElement('button');
+  d.className = 'nav-dot' + (i===0?' active':'');
+  d.onclick = ()=>goTo(i);
+  dots.appendChild(d);
+});
+
+function goTo(n){
+  slides[current].classList.remove('active');
+  slides[current].classList.add('prev');
+  setTimeout(()=>slides[current].classList.remove('prev'),500);
+  current = (n+slides.length)%slides.length;
+  slides[current].classList.add('active');
+  document.querySelectorAll('.nav-dot').forEach((d,i)=>d.classList.toggle('active',i===current));
+  counter.textContent = `SLIDE ${String(current+1).padStart(2,'0')} / ${String(slides.length).padStart(2,'0')}`;
+}
+function changeSlide(dir){goTo(current+dir);}
+document.addEventListener('keydown',e=>{
+  if(e.key==='ArrowRight'||e.key===' ')changeSlide(1);
+  if(e.key==='ArrowLeft')changeSlide(-1);
+});
+
+/* ══════════════════════════════════
+   PHANTOM-X SIMULATOR LOGIC
+══════════════════════════════════ */
+const altSlider    = document.getElementById('altSlider');
+const paySlider    = document.getElementById('paySlider');
+const fuelSlider   = document.getElementById('fuelSlider');
+const wpnSlider    = document.getElementById('wpnSlider');
+const stealthSlider= document.getElementById('stealthSlider');
+
+function fmt(n){return n.toLocaleString();}
+
+function updateSim(){
+  const alt     = +altSlider.value;
+  const payload = +paySlider.value;
+  const fuel    = +fuelSlider.value;
+  const wpns    = +wpnSlider.value;
+  const stealth = +stealthSlider.value;
+
+  // Update display values
+  document.getElementById('altVal').textContent    = fmt(alt);
+  document.getElementById('payVal').textContent    = fmt(payload);
+  document.getElementById('fuelVal').textContent   = fmt(fuel);
+  document.getElementById('wpnVal').textContent    = wpns;
+  document.getElementById('stealthVal').textContent= stealth;
+
+  // Derived telemetry
+  const maxPayload = 4000;
+  const payloadFraction = payload/maxPayload;
+  const altFraction = alt/50000;
+  const fuelFraction = fuel/2000;
+
+  // Range: base 1500mi, payload reduces it, fuel increases it
+  const range = Math.round(1500 * (1-payloadFraction*0.5) * (fuelFraction*0.8+0.2));
+  // Endurance: fuel / burn rate
+  const burnRate = Math.round(30 + payloadFraction*40 + altFraction*20);
+  const endurance = (fuel/burnRate).toFixed(1);
+  // Thrust-weight ratio
+  const twr = (1.2 - payloadFraction*0.6 - altFraction*0.3).toFixed(2);
+  // RCS
+  const rcs = ((1-(stealth/100))*0.5+0.01).toFixed(2);
+  // G load (higher altitude = more stress)
+  const gload = (2.5 + altFraction*3 + payloadFraction*1.5).toFixed(1);
+  // Latency (nominal with mild variance)
+  const latency = Math.round(10 + Math.random()*5);
+
+  // Update telemetry display
+  document.getElementById('tTrust').innerHTML    = `${twr}<span class="telem-unit">TWR</span>`;
+  document.getElementById('tBurn').innerHTML     = `${burnRate}<span class="telem-unit">gal/hr</span>`;
+  document.getElementById('tRCS').innerHTML      = `${rcs}<span class="telem-unit">m²</span>`;
+  document.getElementById('tGload').innerHTML    = `${gload}<span class="telem-unit">G</span>`;
+  document.getElementById('tLatency').innerHTML  = `${latency}<span class="telem-unit">ms</span>`;
+
+  // Update callouts
+  document.getElementById('callAlt').textContent     = `ALT: ${fmt(alt)} ft`;
+  document.getElementById('callPay').textContent     = `PAYLOAD: ${fmt(payload)} lbs`;
+  document.getElementById('callRange').textContent   = `RANGE: ${fmt(range)} mi`;
+  document.getElementById('callEndure').textContent  = `ENDURANCE: ${endurance} hrs`;
+  document.getElementById('callStealth').textContent = `STEALTH: ${stealth}%`;
+
+  // Altitude bar
+  const barH = Math.round(20 + altFraction * 140);
+  document.getElementById('altBar').style.height = barH+'px';
+
+  // Drone vertical position hint
+  const droneEl = document.getElementById('simDrone');
+  const lift = -altFraction * 18;
+  droneEl.style.transform = `translateY(${lift}px)`;
+
+  // Weapon hardpoints visibility
+  const wpnIds = ['wpn1','wpn2','wpn3','wpn4','wpn5','wpn6'];
+  wpnIds.forEach((id,i)=>{
+    const el = document.getElementById(id);
+    if(el) el.style.opacity = i<wpns ? '1' : '0';
+  });
+
+  // Risk calculation
+  let risk = 0;
+  if(alt > 40000) risk += 30;
+  else if(alt > 25000) risk += 15;
+  if(payloadFraction > 0.8) risk += 25;
+  else if(payloadFraction > 0.6) risk += 10;
+  if(fuelFraction < 0.3) risk += 20;
+  if(wpns > 6) risk += 10;
+  if(stealth < 30) risk += 20;
+  if(+twr < 0.5) risk += 25;
+  risk = Math.min(100, risk);
+
+  document.getElementById('riskPct').textContent = risk+'%';
+  const fill = document.getElementById('riskFill');
+  fill.style.width = risk+'%';
+  fill.style.background = risk<30 ? '#10B981' : risk<60 ? '#F59E0B' : '#F87171';
+
+  // Advisory
+  const adv = document.getElementById('advisory');
+  const threat = document.getElementById('threatStatus');
+  if(risk < 30){
+    adv.style.background = 'rgba(16,185,129,.08)';
+    adv.style.color = '#10B981';
+    adv.textContent = '▸ ALL SYSTEMS NOMINAL — MISSION READY. Twin sync active across all 9 sensor nodes.';
+    threat.textContent = '■ NOMINAL — ALL SYSTEMS GO';
+    threat.style.color = '#10B981';
+  } else if(risk < 60){
+    adv.style.background = 'rgba(245,158,11,.08)';
+    adv.style.color = '#F59E0B';
+    adv.textContent = `⚠ ELEVATED RISK (${risk}%) — Twin recommends: reduce payload or increase fuel capacity before mission go.`;
+    threat.textContent = '⚠ CAUTION — REVIEW PARAMETERS';
+    threat.style.color = '#F59E0B';
+  } else {
+    adv.style.background = 'rgba(248,113,113,.08)';
+    adv.style.color = '#F87171';
+    adv.textContent = `✖ MISSION RISK CRITICAL (${risk}%) — Digital Twin is blocking mission execution. Structural or fuel constraints exceeded.`;
+    threat.textContent = '✖ ABORT — TWIN OVERRIDE ACTIVE';
+    threat.style.color = '#F87171';
+  }
+
+  // Telemetry colors
+  document.getElementById('tTrust').style.color  = +twr < 0.5 ? '#F87171' : '#1A8CFF';
+  document.getElementById('tGload').style.color  = +gload > 5  ? '#F87171' : '#1A8CFF';
+  document.getElementById('tRCS').style.color    = +rcs > 0.2  ? '#F87171' : '#10B981';
+}
+
+[altSlider,paySlider,fuelSlider,wpnSlider,stealthSlider].forEach(s=>s.addEventListener('input',updateSim));
+updateSim();
+</script>
+</body>
+</html>
